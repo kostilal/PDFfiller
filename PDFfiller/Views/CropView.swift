@@ -18,8 +18,8 @@ protocol CropViewProtocol {
 }
 
 class CropView: UIView, CropViewProtocol {
-    private var circleShapes = [CAShapeLayer]()
-    private var centerShapes = [CAShapeLayer]()
+    private var circleShapes = [CircleShape]()
+    private var ellipseShapes = [EllipseShape]()
     private let rectangleShape = CAShapeLayer()
     
     var positions: [CGPoint]?
@@ -55,35 +55,20 @@ class CropView: UIView, CropViewProtocol {
                                              CGPoint(x: bounds.size.width, y: bounds.size.height),
                                              CGPoint(x: bounds.origin.x, y: bounds.size.height)]
         
-        let fillColor = UIColor(red: 0/255, green: 134/255, blue: 234/255, alpha: 1)
-        
-        for i in 0..<4 {
-            let shape = CAShapeLayer()
-            shape.path = getCircleShapePath(inCenter: initialPositions[i], radius: 10).cgPath
-            shape.fillColor = fillColor.cgColor
-            layer.addSublayer(shape)
-            circleShapes.append(shape)
+        for i in 0..<initialPositions.count {
+            let circleShape = CircleShape(centerPoint: initialPositions[i])
+            
+            layer.addSublayer(circleShape)
+            circleShapes.append(circleShape)
+            
+            let nextIndex = i + 1 == initialPositions.count ? 0 : i + 1
+            let midPoint = findCeneterBetween(point: initialPositions[i], andPoint: initialPositions[nextIndex])
+            let ellipseShape = EllipseShape(centerPoint: midPoint, angle: 8 * i) //i % 2 == 0 ? 0 : 90
+            
+            layer.addSublayer(ellipseShape)
+            ellipseShapes.append(ellipseShape)
         }
 
-        let centerShapeSize = CGSize(width: 40, height: 10)
-        
-        for i in 0..<4 {
-            let shape = CAShapeLayer()
-            let nextIndex = i + 1 == 4 ? 0 : i + 1
-            let midPoint = findCeneterBetween(point: initialPositions[i], andPoint: initialPositions[nextIndex])
-            shape.path = getCenterShapePath(rect: CGRect(x: midPoint.x,
-                                                         y: midPoint.y,
-                                                         width: centerShapeSize.width,
-                                                         height: centerShapeSize.height)).cgPath
-            
-            
-            shape.anchorPoint = CGPoint(x: 0.5, y: 0.5)
-            shape.transform = CATransform3DRotate(shape.transform, degreesToRadians(0.0), 0.0, 0.0, 1.0)
-            shape.fillColor = fillColor.cgColor
-            layer.addSublayer(shape)
-            centerShapes.append(shape)
-        }
-        
         let path = UIBezierPath()
         path.move(to: initialPositions.first!)
 
@@ -97,18 +82,6 @@ class CropView: UIView, CropViewProtocol {
         rectangleShape.strokeColor = UIColor(red: 0/255, green: 134/255, blue: 234/255, alpha: 1).cgColor
         rectangleShape.path = path.cgPath
         layer.addSublayer(rectangleShape)
-    }
-    
-    func getCircleShapePath(inCenter point: CGPoint, radius: CGFloat) -> UIBezierPath {
-        let path = UIBezierPath(arcCenter: point, radius: radius, startAngle: 0.degreesToRadians, endAngle: 360.degreesToRadians, clockwise: true)
-        
-        return path
-    }
-    
-    func getCenterShapePath(rect: CGRect) -> UIBezierPath {
-        let path =  UIBezierPath(roundedRect: rect, cornerRadius: rect.height/4)
-        
-        return path
     }
     
     func findCeneterBetween(point a: CGPoint, andPoint b: CGPoint) -> CGPoint {
