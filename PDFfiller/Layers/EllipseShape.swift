@@ -68,8 +68,7 @@ class EllipseShape: CAShapeLayer {
                                                 width: size.width,
                                                 height: size.height)).cgPath
         
-        anchorPoint = CGPoint(x: 0.5, y: 0.5)
-        transform = CATransform3DMakeRotation(angle.degreesToRadians, 0.0, 0.0, 1.0)
+//        transform = CATransform3DMakeRotation(angle.degreesToRadians, 0.0, 0.0, 1.0)
     }
     
     private func getEllipseShapePath(rect: CGRect) -> UIBezierPath {
