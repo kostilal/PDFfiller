@@ -24,6 +24,6 @@ class CornerDragView: DragView {
     func setupUI() {
         layer.cornerRadius = CornerDragView.size.height / 2
         layer.masksToBounds = true
-        backgroundColor = .blue
+        backgroundColor = UIColor(red: 0/255, green: 134/255, blue: 234/255, alpha: 1)
     }
 }

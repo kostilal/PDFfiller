@@ -10,6 +10,7 @@ import UIKit
 
 protocol DragViewDelegate {
     func draggingDidBegan(_ view: DragView)
+    func draggingDidChanged(_ view: DragView)
     func draggingDidEnd(_ view: DragView)
 }
 
@@ -31,18 +32,19 @@ class DragView: UIView {
     }
     
     @objc func touchHandler(_ sender: UIPanGestureRecognizer) {
-        sender.translation(in: self)
+        let translation = sender.translation(in: respectedView)
+        center = CGPoint(x: center.x + translation.x, y: center.y + translation.y)
+        sender.setTranslation(CGPoint.zero, in: respectedView)
         
-        let state = sender.state
-        
-        guard state == .ended else {
-            if state == .began {
-                delegate?.draggingDidBegan(self)
-            }
-            return
+        switch sender.state {
+        case .began:
+            delegate?.draggingDidBegan(self)
+        case .changed:
+            delegate?.draggingDidChanged(self)
+        case .ended:
+            delegate?.draggingDidEnd(self)
+        default:
+            break
         }
-        
-        delegate?.draggingDidEnd(self)
     }
-
 }
