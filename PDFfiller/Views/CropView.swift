@@ -35,7 +35,7 @@ class CropView: UIView, DragViewDelegate {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-         imageView.frame = CGRect(x: 0, y: 0, width: bounds.size.width, height: bounds.size.height)
+         imageView.frame = CGRect(x: CornerDragView.size.width/2, y: CornerDragView.size.width/2, width: bounds.size.width - CornerDragView.size.width, height: bounds.size.height - CornerDragView.size.width)
     }
     
     override func draw(_ rect: CGRect) {
@@ -44,7 +44,7 @@ class CropView: UIView, DragViewDelegate {
     }
     
     private func defaultSetup() {
-        backgroundColor = .white
+        backgroundColor = .clear
         addSubview(imageView)
         
         shape.fillColor = UIColor(red: 0/255, green: 134/255, blue: 234/255, alpha: 0.3).cgColor
@@ -60,7 +60,7 @@ class CropView: UIView, DragViewDelegate {
         dragableViews.append(topLeft)
         
         let topRight = CornerDragView(with: self, position: CGPoint(x: bounds.origin.x + bounds.size.width - CornerDragView.size.width,
-                                                                    y: bounds.origin.y - CornerDragView.size.height))
+                                                                    y: bounds.origin.y))
         dragableViews.append(topRight)
         
         let bottomRight = CornerDragView(with: self, position: CGPoint(x: bounds.size.width - CornerDragView.size.width,
@@ -68,7 +68,7 @@ class CropView: UIView, DragViewDelegate {
         
         dragableViews.append(bottomRight)
         
-        let bottomLeft = CornerDragView(with: self, position: CGPoint(x: bounds.origin.x - CornerDragView.size.width,
+        let bottomLeft = CornerDragView(with: self, position: CGPoint(x: bounds.origin.x,
                                                                       y: bounds.size.height - CornerDragView.size.height))
         dragableViews.append(bottomLeft)
         

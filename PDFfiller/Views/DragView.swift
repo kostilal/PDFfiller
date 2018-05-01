@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CoreGraphics
 
 protocol DragViewDelegate {
     func draggingDidBegan(_ view: DragView)
@@ -33,6 +34,8 @@ class DragView: UIView {
     
     @objc func touchHandler(_ sender: UIPanGestureRecognizer) {
         let translation = sender.translation(in: respectedView)
+        
+//        guard let respectedView = self.respectedView, respectedView.bounds.contains(translation) else { return }
         center = CGPoint(x: center.x + translation.x, y: center.y + translation.y)
         sender.setTranslation(CGPoint.zero, in: respectedView)
         
