@@ -9,21 +9,17 @@
 import UIKit
 import QuartzCore
 
+extension BinaryInteger {
+    var degreesToRadians: CGFloat { return CGFloat(Int(self)) * .pi / 180 }
+}
+
 protocol CropViewProtocol {
-    var image: UIImage? { get set }
     var positions: [CGPoint]? { get set }
 }
 
 class CropView: UIView, CropViewProtocol {
-    private let imageView = UIImageView()
-    private var dragableViews = [DragView]()
-    private let shape = CAShapeLayer()
-    
-    var image: UIImage? {
-        didSet {
-            imageView.image = image
-        }
-    }
+    private var circleShapes = [CAShapeLayer]()
+    private let rectangleShapes = CAShapeLayer()
     
     var positions: [CGPoint]?
     
@@ -41,63 +37,56 @@ class CropView: UIView, CropViewProtocol {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-         imageView.frame = CGRect(x: CornerDragView.size.width/2,
-                                  y: CornerDragView.size.width/2,
-                                  width: bounds.size.width - CornerDragView.size.width,
-                                  height: bounds.size.height - CornerDragView.size.width)
     }
     
     override func draw(_ rect: CGRect) {
         super.draw(rect)
-        setupDragViews()
+        setupDragLayers()
     }
     
     private func defaultSetup() {
         backgroundColor = .clear
-        addSubview(imageView)
-        
-        shape.fillColor = UIColor(red: 0/255, green: 134/255, blue: 234/255, alpha: 0.3).cgColor
-        shape.strokeColor = UIColor(red: 0/255, green: 134/255, blue: 234/255, alpha: 1).cgColor
-        shape.lineWidth = CornerDragView.size.width/4
-        
-        layer.addSublayer(shape)
+
+//        shape.fillColor = UIColor(red: 0/255, green: 134/255, blue: 234/255, alpha: 0.3).cgColor
+//        shape.strokeColor = UIColor(red: 0/255, green: 134/255, blue: 234/255, alpha: 1).cgColor
+//        shape.lineWidth = CornerDragView.size.width/4
+//        
+//        layer.addSublayer(shape)
     }
     
-    func setupDragViews() {
-        let topLeft = CornerDragView(with: self, position: CGPoint(x: bounds.origin.x,
-                                                                   y: bounds.origin.y))
-        dragableViews.append(topLeft)
+    func setupDragLayers() {
+        let initialPositions = positions ?? [CGPoint(x: bounds.origin.x, y: bounds.origin.y),
+                                             CGPoint(x: bounds.origin.x + bounds.size.width, y: bounds.origin.y),
+                                             CGPoint(x: bounds.size.width, y: bounds.size.height),
+                                             CGPoint(x: bounds.origin.x, y: bounds.size.height)]
         
-        let topRight = CornerDragView(with: self, position: CGPoint(x: bounds.origin.x + bounds.size.width - CornerDragView.size.width,
-                                                                    y: bounds.origin.y))
-        dragableViews.append(topRight)
-        
-        let bottomRight = CornerDragView(with: self, position: CGPoint(x: bounds.size.width - CornerDragView.size.width,
-                                                                       y: bounds.size.height - CornerDragView.size.height))
-        
-        dragableViews.append(bottomRight)
-        
-        let bottomLeft = CornerDragView(with: self, position: CGPoint(x: bounds.origin.x,
-                                                                      y: bounds.size.height - CornerDragView.size.height))
-        dragableViews.append(bottomLeft)
-        
-        dragableViews.forEach { (view) in
-            addSubview(view)
+        for i in 0..<4 {
+            let shape = CAShapeLayer()
+            shape.path = getDotPath(inCenter: initialPositions[i], radius: 10).cgPath
+            shape.fillColor = UIColor(red: 0/255, green: 134/255, blue: 234/255, alpha: 1).cgColor
+            layer.addSublayer(shape)
+            circleShapes.append(shape)
         }
-        
+
         drawShape()
     }
     
+    func getDotPath(inCenter point: CGPoint, radius: CGFloat) -> UIBezierPath {
+        let path = UIBezierPath(arcCenter: point, radius: radius, startAngle: 0.degreesToRadians, endAngle: 360.degreesToRadians, clockwise: true)
+        
+        return path
+    }
+    
     func drawShape() {
-        let path = UIBezierPath()
-        path.move(to: dragableViews.first!.center)
+//        let path = UIBezierPath()
+//        path.move(to: dragableViews.first!.center)
+//
+//        for i in 1..<dragableViews.count {
+//            path.addLine(to: dragableViews[i].center)
+//        }
+//
+//        path.close()
 
-        for i in 1..<dragableViews.count {
-            path.addLine(to: dragableViews[i].center)
-        }
-
-        path.close()
-
-        shape.path = path.cgPath
+//        shape.path = path.cgPath
     }
 }

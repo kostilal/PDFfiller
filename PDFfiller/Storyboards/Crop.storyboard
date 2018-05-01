@@ -31,20 +31,19 @@
                                     <action selector="resetButtonPressed:" destination="VC2-VS-U7n" eventType="touchUpInside" id="Pka-rC-A4N"/>
                                 </connections>
                             </button>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="nFK-CH-xJR" customClass="CropView" customModule="PDFfiller" customModuleProvider="target">
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="kf3-W6-3W5">
                                 <rect key="frame" x="20" y="40" width="335" height="567"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                            </view>
+                            </imageView>
                         </subviews>
                         <color key="backgroundColor" red="0.42393944300518138" green="0.42393944300518138" blue="0.42393944300518138" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                         <constraints>
+                            <constraint firstItem="kf3-W6-3W5" firstAttribute="top" secondItem="aoc-Nh-mQM" secondAttribute="top" constant="20" id="B6l-Rv-D9E"/>
                             <constraint firstItem="aoc-Nh-mQM" firstAttribute="bottom" secondItem="5v6-nP-P0V" secondAttribute="bottom" id="CTp-gy-pWI"/>
                             <constraint firstItem="5v6-nP-P0V" firstAttribute="trailing" secondItem="aoc-Nh-mQM" secondAttribute="trailing" id="Dty-L2-xv5"/>
                             <constraint firstItem="5v6-nP-P0V" firstAttribute="leading" secondItem="aoc-Nh-mQM" secondAttribute="leading" id="NLW-SQ-tW8"/>
-                            <constraint firstItem="aoc-Nh-mQM" firstAttribute="trailing" secondItem="nFK-CH-xJR" secondAttribute="trailing" constant="20" id="Xtw-7C-eJR"/>
-                            <constraint firstItem="5v6-nP-P0V" firstAttribute="top" secondItem="nFK-CH-xJR" secondAttribute="bottom" constant="20" id="cad-5I-3O4"/>
-                            <constraint firstItem="nFK-CH-xJR" firstAttribute="leading" secondItem="aoc-Nh-mQM" secondAttribute="leading" constant="20" id="cf7-zj-AYB"/>
-                            <constraint firstItem="nFK-CH-xJR" firstAttribute="top" secondItem="aoc-Nh-mQM" secondAttribute="top" constant="20" id="fGd-0C-8xW"/>
+                            <constraint firstItem="kf3-W6-3W5" firstAttribute="leading" secondItem="aoc-Nh-mQM" secondAttribute="leading" constant="20" id="Ueq-hU-AlJ"/>
+                            <constraint firstItem="5v6-nP-P0V" firstAttribute="top" secondItem="kf3-W6-3W5" secondAttribute="bottom" constant="20" id="ckj-UI-uTu"/>
+                            <constraint firstItem="aoc-Nh-mQM" firstAttribute="trailing" secondItem="kf3-W6-3W5" secondAttribute="trailing" constant="20" id="d9M-ii-DYD"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="aoc-Nh-mQM"/>
                     </view>
@@ -63,7 +62,7 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
-                        <outlet property="cropView" destination="nFK-CH-xJR" id="3hp-RI-odV"/>
+                        <outlet property="imageView" destination="kf3-W6-3W5" id="wUm-Cm-UgF"/>
                         <outlet property="resetButton" destination="5v6-nP-P0V" id="emD-JT-BFs"/>
                     </connections>
                 </viewController>

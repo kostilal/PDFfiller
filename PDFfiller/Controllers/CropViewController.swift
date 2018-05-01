@@ -14,19 +14,32 @@ protocol CropViewControllerProtocol {
 
 class CropViewController: UIViewController, CropViewControllerProtocol {
     var image: UIImage?
+    var cropView: CropView?
     
     @IBOutlet weak var resetButton: UIButton!
-    @IBOutlet weak var cropView: CropView!
+    @IBOutlet weak var imageView: UIImageView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        cropView.image = image
+        imageView.image = image
+        setupCropView()
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        cropView?.frame = CGRect(x: 0, y: 0, width: imageView.bounds.width, height: imageView.bounds.height)
+    }
+    
+    func setupCropView() {
+        cropView = CropView()
+        imageView.addSubview(cropView!)
     }
     
     // MARK: - Actions

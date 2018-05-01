@@ -16,9 +16,6 @@
 		C44C5B5E209756CB0055124B /* CropViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C44C5B5D209756CB0055124B /* CropViewController.swift */; };
 		C44C5B60209757750055124B /* Crop.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C44C5B5F209757750055124B /* Crop.storyboard */; };
 		C44C5B62209793620055124B /* CropView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C44C5B61209793620055124B /* CropView.swift */; };
-		C44C5B642097ACDB0055124B /* DragView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C44C5B632097ACDB0055124B /* DragView.swift */; };
-		C44C5B662097ACF20055124B /* CornerDragView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C44C5B652097ACF20055124B /* CornerDragView.swift */; };
-		C44C5B682097AD0A0055124B /* CenterDragView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C44C5B672097AD0A0055124B /* CenterDragView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -33,9 +30,6 @@
 		C44C5B5D209756CB0055124B /* CropViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropViewController.swift; sourceTree = "<group>"; };
 		C44C5B5F209757750055124B /* Crop.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Crop.storyboard; sourceTree = "<group>"; };
 		C44C5B61209793620055124B /* CropView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropView.swift; sourceTree = "<group>"; };
-		C44C5B632097ACDB0055124B /* DragView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragView.swift; sourceTree = "<group>"; };
-		C44C5B652097ACF20055124B /* CornerDragView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerDragView.swift; sourceTree = "<group>"; };
-		C44C5B672097AD0A0055124B /* CenterDragView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CenterDragView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -110,9 +104,6 @@
 			isa = PBXGroup;
 			children = (
 				C44C5B61209793620055124B /* CropView.swift */,
-				C44C5B632097ACDB0055124B /* DragView.swift */,
-				C44C5B652097ACF20055124B /* CornerDragView.swift */,
-				C44C5B672097AD0A0055124B /* CenterDragView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -197,11 +188,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C44C5B662097ACF20055124B /* CornerDragView.swift in Sources */,
-				C44C5B682097AD0A0055124B /* CenterDragView.swift in Sources */,
 				C44C5B5A20974F780055124B /* UIViewExtention.swift in Sources */,
 				C44C5B3D20974AE70055124B /* AppDelegate.swift in Sources */,
-				C44C5B642097ACDB0055124B /* DragView.swift in Sources */,
 				C44C5B5E209756CB0055124B /* CropViewController.swift in Sources */,
 				C44C5B5720974B820055124B /* MainViewController.swift in Sources */,
 				C44C5B62209793620055124B /* CropView.swift in Sources */,
