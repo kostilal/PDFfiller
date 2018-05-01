@@ -9,8 +9,12 @@
 import UIKit
 import QuartzCore
 
-class CropView: UIView, DragViewDelegate {
-    
+protocol CropViewProtocol {
+    var image: UIImage? { get set }
+    var positions: [CGPoint]? { get set }
+}
+
+class CropView: UIView, CropViewProtocol {
     private let imageView = UIImageView()
     private var dragableViews = [DragView]()
     private let shape = CAShapeLayer()
@@ -20,6 +24,8 @@ class CropView: UIView, DragViewDelegate {
             imageView.image = image
         }
     }
+    
+    var positions: [CGPoint]?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -35,7 +41,10 @@ class CropView: UIView, DragViewDelegate {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-         imageView.frame = CGRect(x: CornerDragView.size.width/2, y: CornerDragView.size.width/2, width: bounds.size.width - CornerDragView.size.width, height: bounds.size.height - CornerDragView.size.width)
+         imageView.frame = CGRect(x: CornerDragView.size.width/2,
+                                  y: CornerDragView.size.width/2,
+                                  width: bounds.size.width - CornerDragView.size.width,
+                                  height: bounds.size.height - CornerDragView.size.width)
     }
     
     override func draw(_ rect: CGRect) {
@@ -74,21 +83,8 @@ class CropView: UIView, DragViewDelegate {
         
         dragableViews.forEach { (view) in
             addSubview(view)
-            view.delegate = self
         }
         
-        drawShape()
-    }
-    
-    func draggingDidBegan(_ view: DragView) {
-        
-    }
-    
-    func draggingDidEnd(_ view: DragView) {
-        
-    }
-    
-    func draggingDidChanged(_ view: DragView) {
         drawShape()
     }
     
@@ -104,13 +100,4 @@ class CropView: UIView, DragViewDelegate {
 
         shape.path = path.cgPath
     }
-
-    /*
-    // Only override draw() if you perform custom drawing.
-    // An empty implementation adversely affects performance during animation.
-    override func draw(_ rect: CGRect) {
-        // Drawing code
-    }
-    */
-
 }
