@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14109" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="VC2-VS-U7n">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Crop-->
+        <scene sceneID="hSo-g9-jk2">
+            <objects>
+                <viewController storyboardIdentifier="CropViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="VC2-VS-U7n" customClass="CropViewController" customModule="PDFfiller" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="sdB-8c-78S">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="5v6-nP-P0V">
+                                <rect key="frame" x="0.0" y="627" width="375" height="40"/>
+                                <color key="backgroundColor" red="0.99999600649999998" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="40" id="GhK-J8-NLb"/>
+                                </constraints>
+                                <state key="normal" title="Reset">
+                                    <color key="titleColor" red="1" green="0.57637232540000005" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="resetButtonPressed:" destination="VC2-VS-U7n" eventType="touchUpInside" id="Pka-rC-A4N"/>
+                                </connections>
+                            </button>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="nFK-CH-xJR" customClass="CropView" customModule="PDFfiller" customModuleProvider="target">
+                                <rect key="frame" x="20" y="40" width="335" height="567"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" red="0.42393944300518138" green="0.42393944300518138" blue="0.42393944300518138" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                        <constraints>
+                            <constraint firstItem="aoc-Nh-mQM" firstAttribute="bottom" secondItem="5v6-nP-P0V" secondAttribute="bottom" id="CTp-gy-pWI"/>
+                            <constraint firstItem="5v6-nP-P0V" firstAttribute="trailing" secondItem="aoc-Nh-mQM" secondAttribute="trailing" id="Dty-L2-xv5"/>
+                            <constraint firstItem="5v6-nP-P0V" firstAttribute="leading" secondItem="aoc-Nh-mQM" secondAttribute="leading" id="NLW-SQ-tW8"/>
+                            <constraint firstItem="aoc-Nh-mQM" firstAttribute="trailing" secondItem="nFK-CH-xJR" secondAttribute="trailing" constant="20" id="Xtw-7C-eJR"/>
+                            <constraint firstItem="5v6-nP-P0V" firstAttribute="top" secondItem="nFK-CH-xJR" secondAttribute="bottom" constant="20" id="cad-5I-3O4"/>
+                            <constraint firstItem="nFK-CH-xJR" firstAttribute="leading" secondItem="aoc-Nh-mQM" secondAttribute="leading" constant="20" id="cf7-zj-AYB"/>
+                            <constraint firstItem="nFK-CH-xJR" firstAttribute="top" secondItem="aoc-Nh-mQM" secondAttribute="top" constant="20" id="fGd-0C-8xW"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="aoc-Nh-mQM"/>
+                    </view>
+                    <navigationItem key="navigationItem" title="Crop" id="4ih-R3-KGc">
+                        <barButtonItem key="leftBarButtonItem" title="Cancel" id="0kj-9v-lsw">
+                            <color key="tintColor" red="0.19963533415849966" green="0.070066945036442063" blue="0.071964176569010732" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                            <connections>
+                                <action selector="cancelButtonPressed:" destination="VC2-VS-U7n" id="vde-4i-U7F"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" title="Apply" id="KEa-Bx-aov">
+                            <color key="tintColor" red="1" green="0.57637232540000005" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <connections>
+                                <action selector="applyButtonPressed:" destination="VC2-VS-U7n" id="xDH-xr-ac9"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="cropView" destination="nFK-CH-xJR" id="3hp-RI-odV"/>
+                        <outlet property="resetButton" destination="5v6-nP-P0V" id="emD-JT-BFs"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="h9u-L4-UZu" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="573.60000000000002" y="137.18140929535232"/>
+        </scene>
+    </scenes>
+</document>
