@@ -77,8 +77,7 @@ class CropView: UIView, CropViewProtocol {
                                                          height: centerShapeSize.height)).cgPath
             
             
-            shape.anchorPoint = CGPoint(x: 0.5, y: 0.5)
-            shape.transform = CATransform3DRotate(shape.transform, degreesToRadians(0.0), 0.0, 0.0, 1.0)
+            shape.transform = CATransform3DMakeRotation(CGFloat(40.degreesToRadians), 0.0, 0.0, 1.0)
             shape.fillColor = fillColor.cgColor
             layer.addSublayer(shape)
             centerShapes.append(shape)
@@ -116,9 +115,5 @@ class CropView: UIView, CropViewProtocol {
         let y = (a.y + b.y) / 2
         
         return CGPoint(x: x, y: y)
-    }
-    
-    func degreesToRadians(_ degrees: Double) -> CGFloat {
-        return CGFloat(degrees * .pi / 180.0)
     }
 }
