@@ -7,7 +7,12 @@
 //
 
 import UIKit
-import QuartzCore
+import CoreGraphics
+
+struct ShapesCorrespondenceTable {
+    var ellipseIndex: Int
+    var circleIndexes: [Int]
+}
 
 extension BinaryInteger {
     var degreesToRadians: CGFloat { return CGFloat(Int(self)) * .pi / 180 }
@@ -23,7 +28,8 @@ class CropView: UIView, CropViewProtocol {
     private var ellipseShapes = [EllipseShape]()
     private let rectangleShape = CAShapeLayer()
     private var initialPositions: [CGPoint]
-     private var dragableShape: DragableShape?
+    private var dragableShape: DragableShape?
+    private var correspondenceTable = [ShapesCorrespondenceTable]()
     
     var cropedObjectFrame: CGRect
     var shapePositions: [CGPoint]?
@@ -42,8 +48,6 @@ class CropView: UIView, CropViewProtocol {
         fatalError("init(coder:) has not been implemented")
     }
     
-    
-
     private func defaultSetup() {
         backgroundColor = .clear
         isUserInteractionEnabled = true
@@ -65,6 +69,7 @@ class CropView: UIView, CropViewProtocol {
     
     open func redrawShapes(_ cropedObjectFrame: CGRect?) {
         if let cropedObjectFrame = cropedObjectFrame {
+            self.cropedObjectFrame = cropedObjectFrame
             initialPositions = CropView.calculateInitialPositions(cropedObjectFrame)
         }
         
@@ -85,12 +90,17 @@ class CropView: UIView, CropViewProtocol {
             let nextIndex = i + 1 == startPositions.count ? 0 : i + 1
             let midPoint = findCeneterBetween(point: startPositions[i], andPoint: startPositions[nextIndex])
             let angle = i % 2 == 0 ? 0 : 90
+            let axis: ShapeAxis = i % 2 == 0 ? .horizontal : .vertical
             
             let ellipseShape = EllipseShape()
             ellipseShape.centerPoint = midPoint
             ellipseShape.angle = angle
+            ellipseShape.axis = axis
             layer.addSublayer(ellipseShape)
             ellipseShapes.append(ellipseShape)
+            
+            let shapeCorrespondenceTable = ShapesCorrespondenceTable(ellipseIndex: i, circleIndexes: [i, nextIndex])
+            correspondenceTable.append(shapeCorrespondenceTable)
         }
     }
     
@@ -133,6 +143,12 @@ class CropView: UIView, CropViewProtocol {
         return CGPoint(x: x, y: y)
     }
     
+    func findDistanceBetween(point a: CGPoint, point b: CGPoint) -> CGFloat {
+        let xDist = a.x - b.x
+        let yDist = a.y - b.y
+        return CGFloat(sqrt((xDist * xDist) + (yDist * yDist)))
+    }
+    
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         let touch = touches.first
         
@@ -143,6 +159,8 @@ class CropView: UIView, CropViewProtocol {
             if let path = layer.path, path.contains(point) {
                 if let circle = circleShapes.first(where: {$0 == layer}) {
                     dragableShape = circle
+                } else if let elipse = ellipseShapes.first(where: {$0 == layer}) {
+                    dragableShape = elipse
                 }
             }
         }
@@ -151,11 +169,14 @@ class CropView: UIView, CropViewProtocol {
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         let touch = touches.first
         
-        guard let shape = dragableShape, let point = touch?.location(in: self) else { return }
+        guard let point = touch?.location(in: self) else { return }
+        guard let dragableShape = dragableShape, validate(shape: dragableShape, contain: point) else { return }
         
-        shape.centerPoint = point
-        redrawEllipseLayers()
-        drawRectangleLayer()
+        if let circle = dragableShape as? CircleShape {
+            dragCircleShape(circle, point)
+        } else if let ellipse = dragableShape as? EllipseShape {
+            dragEllipseShape(ellipse, point)
+        }
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -166,37 +187,44 @@ class CropView: UIView, CropViewProtocol {
         dragableShape = nil
     }
     
-//    func testVisualStuff() {
-//        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-//            self.circleShapes.forEach({ (shape) in
-//                shape.color = .red
-//            })
-//
-//            self.ellipseShapes.forEach({ (shape) in
-//                shape.color = .yellow
-//            })
-//        }
-//
-//        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-//            self.circleShapes.forEach({ (shape) in
-//                shape.radius = 5
-//            })
-//
-//            self.ellipseShapes.forEach({ (shape) in
-//                shape.radius = 2
-//            })
-//        }
-//
-//        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
-//            self.ellipseShapes.forEach({ (shape) in
-//                shape.size = CGSize(width: 70, height: 20)
-//            })
-//        }
-//
-//        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-//            self.ellipseShapes.forEach({ (shape) in
-//                shape.angle = 10
-//            })
-//        }
-//    }
+    func dragCircleShape(_ shape: CircleShape, _ point: CGPoint) {
+        shape.centerPoint = point
+        redrawEllipseLayers()
+        drawRectangleLayer()
+    }
+    
+    func dragEllipseShape(_ shape: EllipseShape, _ point: CGPoint) {
+        let ellipseIndex = ellipseShapes.index(of: shape)
+        let circlesIndexes = correspondenceTable.first(where: {$0.ellipseIndex == ellipseIndex})?.circleIndexes
+        
+        if shape.axis == .horizontal {
+            circlesIndexes?.forEach({ (index) in
+                let circle = circleShapes[index]
+                let distance = circle.centerPoint.y - point.y
+                circle.centerPoint = CGPoint(x: circle.centerPoint.x, y: circle.centerPoint.y - distance)
+            })
+            
+            shape.centerPoint = CGPoint(x: shape.centerPoint.x, y: point.y)
+        } else {
+            circlesIndexes?.forEach({ (index) in
+                let circle = circleShapes[index]
+                let distance = circle.centerPoint.x - point.x
+                circle.centerPoint = CGPoint(x: circle.centerPoint.x - distance, y: circle.centerPoint.y)
+            })
+            
+            shape.centerPoint = CGPoint(x: point.x, y: shape.centerPoint.y)
+        }
+        
+        redrawEllipseLayers()
+        drawRectangleLayer()
+    }
+    
+    func validate(shape: DragableShape, contain point: CGPoint) -> Bool {
+        let frame = CGRect(x: cropedObjectFrame.origin.x - shape.radius,
+                           y: cropedObjectFrame.origin.y - shape.radius,
+                           width: cropedObjectFrame.size.width + shape.radius,
+                           height: cropedObjectFrame.size.height + shape.radius)
+        
+        return frame.contains(point)
+    }
 }

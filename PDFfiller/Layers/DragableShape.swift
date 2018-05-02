@@ -27,20 +27,8 @@ class DragableShape: CAShapeLayer {
         }
     }
     
-    override init() {
-        super.init()
-        
-        redraw()
-    }
-    
-    required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-        
-        redraw()
-    }
-    
-    override init(layer: Any) {
-        super.init(layer: layer)
+    override func layoutSublayers() {
+        super.layoutSublayers()
         
         redraw()
     }
