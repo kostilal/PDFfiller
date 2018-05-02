@@ -14,106 +14,134 @@ extension BinaryInteger {
 }
 
 protocol CropViewProtocol {
-    var positions: [CGPoint]? { get set }
+    var cropedObjectFrame: CGRect { get set }
+    var shapePositions: [CGPoint]? { get set }
 }
 
 class CropView: UIView, CropViewProtocol {
-    private var circleShapes = [CAShapeLayer]()
-    private var centerShapes = [CAShapeLayer]()
+    private var circleShapes = [CircleShape]()
+    private var ellipseShapes = [EllipseShape]()
     private let rectangleShape = CAShapeLayer()
+    private var initialPositions: [CGPoint]
     
-    var positions: [CGPoint]?
+    var cropedObjectFrame: CGRect
+    var shapePositions: [CGPoint]?
     
-    override init(frame: CGRect) {
+    init(frame: CGRect, cropedObjectFrame: CGRect, shapePositions: [CGPoint]?) {
+        self.cropedObjectFrame = cropedObjectFrame
+        self.shapePositions = shapePositions
+        self.initialPositions = CropView.calculateInitialPositions(cropedObjectFrame)
+        
         super.init(frame: frame)
         
         defaultSetup()
     }
     
     required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-        
-        defaultSetup()
+        fatalError("init(coder:) has not been implemented")
     }
-    
-    override func layoutSubviews() {
-        super.layoutSubviews()
-    }
-    
-    override func draw(_ rect: CGRect) {
-        super.draw(rect)
-        setupDragLayers()
-    }
-    
+
     private func defaultSetup() {
         backgroundColor = .clear
+        isUserInteractionEnabled = true
+        
+        drawShapes()
     }
     
-    func setupDragLayers() {
-        let initialPositions = positions ?? [CGPoint(x: bounds.origin.x, y: bounds.origin.y),
-                                             CGPoint(x: bounds.origin.x + bounds.size.width, y: bounds.origin.y),
-                                             CGPoint(x: bounds.size.width, y: bounds.size.height),
-                                             CGPoint(x: bounds.origin.x, y: bounds.size.height)]
-        
-        let fillColor = UIColor(red: 0/255, green: 134/255, blue: 234/255, alpha: 1)
-        
-        for i in 0..<4 {
-            let shape = CAShapeLayer()
-            shape.path = getCircleShapePath(inCenter: initialPositions[i], radius: 10).cgPath
-            shape.fillColor = fillColor.cgColor
-            layer.addSublayer(shape)
-            circleShapes.append(shape)
-        }
-
-        let centerShapeSize = CGSize(width: 40, height: 10)
-        
-        for i in 0..<4 {
-            let shape = CAShapeLayer()
-            let nextIndex = i + 1 == 4 ? 0 : i + 1
-            let midPoint = findCeneterBetween(point: initialPositions[i], andPoint: initialPositions[nextIndex])
-            shape.path = getCenterShapePath(rect: CGRect(x: midPoint.x,
-                                                         y: midPoint.y,
-                                                         width: centerShapeSize.width,
-                                                         height: centerShapeSize.height)).cgPath
-            
-            
-            shape.transform = CATransform3DMakeRotation(CGFloat(40.degreesToRadians), 0.0, 0.0, 1.0)
-            shape.fillColor = fillColor.cgColor
-            layer.addSublayer(shape)
-            centerShapes.append(shape)
+    private class func calculateInitialPositions(_ cropedObjectFrame: CGRect) -> [CGPoint] {
+        return [CGPoint(x: cropedObjectFrame.origin.x, y: cropedObjectFrame.origin.y),
+                CGPoint(x: cropedObjectFrame.origin.x + cropedObjectFrame.size.width, y: cropedObjectFrame.origin.y),
+                CGPoint(x: cropedObjectFrame.origin.x + cropedObjectFrame.size.width, y: cropedObjectFrame.origin.y + cropedObjectFrame.size.height),
+                CGPoint(x: cropedObjectFrame.origin.x, y: cropedObjectFrame.origin.y + cropedObjectFrame.size.height)]
+    }
+    
+    open func drawShapes() {
+        drawDragLayers()
+        drawRectangleLayer()
+    }
+    
+    open func redrawShapes(_ cropedObjectFrame: CGRect?) {
+        if let cropedObjectFrame = cropedObjectFrame {
+            initialPositions = CropView.calculateInitialPositions(cropedObjectFrame)
         }
         
+        redrawCirclesLayers()
+        redrawEllipseLayers()
+        drawRectangleLayer()
+    }
+    
+    private func drawDragLayers() {
+        let startPositions = shapePositions ?? initialPositions
+        
+        for i in 0..<startPositions.count {
+            let circleShape = CircleShape(centerPoint: initialPositions[i])
+            
+            layer.addSublayer(circleShape)
+            circleShapes.append(circleShape)
+            
+            let nextIndex = i + 1 == startPositions.count ? 0 : i + 1
+            let midPoint = findCeneterBetween(point: startPositions[i], andPoint: startPositions[nextIndex])
+            let ellipseShape = EllipseShape(centerPoint: midPoint, angle: i % 2 == 0 ? 0 : 90)
+            layer.addSublayer(ellipseShape)
+            ellipseShapes.append(ellipseShape)
+        }
+    }
+    
+    private func drawRectangleLayer() {
         let path = UIBezierPath()
-        path.move(to: initialPositions.first!)
-
-        for i in 1..<initialPositions.count {
-            path.addLine(to: initialPositions[i])
+        path.move(to: circleShapes.first!.centerPoint)
+        
+        for i in 1..<circleShapes.count {
+            path.addLine(to: circleShapes[i].centerPoint)
         }
-
+        
         path.close()
-
-        rectangleShape.fillColor = UIColor(red: 0/255, green: 134/255, blue: 234/255, alpha: 0.3).cgColor
+        
+        rectangleShape.fillColor = UIColor(red: 0/255, green: 134/255, blue: 234/255, alpha: 0.4).cgColor
         rectangleShape.strokeColor = UIColor(red: 0/255, green: 134/255, blue: 234/255, alpha: 1).cgColor
         rectangleShape.path = path.cgPath
         layer.addSublayer(rectangleShape)
     }
     
-    func getCircleShapePath(inCenter point: CGPoint, radius: CGFloat) -> UIBezierPath {
-        let path = UIBezierPath(arcCenter: point, radius: radius, startAngle: 0.degreesToRadians, endAngle: 360.degreesToRadians, clockwise: true)
-        
-        return path
+    private func redrawEllipseLayers() {
+        for i in 0..<circleShapes.count {
+            let nextIndex = i + 1 == circleShapes.count ? 0 : i + 1
+            let midPoint = findCeneterBetween(point: circleShapes[i].centerPoint, andPoint: circleShapes[nextIndex].centerPoint)
+            ellipseShapes[i].centerPoint = midPoint
+        }
     }
     
-    func getCenterShapePath(rect: CGRect) -> UIBezierPath {
-        let path =  UIBezierPath(roundedRect: rect, cornerRadius: rect.height/4)
-        
-        return path
+    private func redrawCirclesLayers() {
+        let startPositions = shapePositions ?? initialPositions
+
+        for (index, shape) in circleShapes.enumerated() {
+            shape.centerPoint = startPositions[index]
+        }
     }
     
-    func findCeneterBetween(point a: CGPoint, andPoint b: CGPoint) -> CGPoint {
+    private func findCeneterBetween(point a: CGPoint, andPoint b: CGPoint) -> CGPoint {
         let x = (a.x + b.x) / 2
         let y = (a.y + b.y) / 2
         
         return CGPoint(x: x, y: y)
+    }
+    
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        let touch = touches.first
+        
+        guard let point = touch?.location(in: self) else { return }
+        guard let sublayers = layer.sublayers as? [CAShapeLayer] else { return }
+        
+        for layer in sublayers {
+            if let path = layer.path, path.contains(point) {
+                guard let circle = layer as? CircleShape, let pos = touch?.location(in: self) else {
+                    return
+                }
+                
+                circle.centerPoint = pos
+                drawRectangleLayer()
+                redrawEllipseLayers()
+            }
+        }
     }
 }

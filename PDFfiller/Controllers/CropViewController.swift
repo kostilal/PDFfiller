@@ -26,20 +26,15 @@ class CropViewController: UIViewController, CropViewControllerProtocol {
         setupCropView()
     }
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-    
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         
-        cropView?.frame = CGRect(x: 0, y: 0, width: imageView.bounds.width, height: imageView.bounds.height)
+        cropView?.redrawShapes(imageView.frame)
     }
     
     func setupCropView() {
-        cropView = CropView()
-        imageView.addSubview(cropView!)
+        cropView = CropView(frame: view.frame, cropedObjectFrame: imageView.frame, shapePositions: nil)
+        view.addSubview(cropView!)
     }
     
     // MARK: - Actions

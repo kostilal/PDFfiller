@@ -31,7 +31,7 @@
                                     <action selector="resetButtonPressed:" destination="VC2-VS-U7n" eventType="touchUpInside" id="Pka-rC-A4N"/>
                                 </connections>
                             </button>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="kf3-W6-3W5">
+                            <imageView contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="kf3-W6-3W5">
                                 <rect key="frame" x="20" y="40" width="335" height="567"/>
                             </imageView>
                         </subviews>
