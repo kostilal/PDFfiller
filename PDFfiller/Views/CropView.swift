@@ -220,10 +220,10 @@ class CropView: UIView, CropViewProtocol {
     }
     
     func validate(shape: DragableShape, contain point: CGPoint) -> Bool {
-        let frame = CGRect(x: cropedObjectFrame.origin.x - shape.radius,
-                           y: cropedObjectFrame.origin.y - shape.radius,
-                           width: cropedObjectFrame.size.width + shape.radius,
-                           height: cropedObjectFrame.size.height + shape.radius)
+        let frame = CGRect(x: cropedObjectFrame.origin.x,
+                           y: cropedObjectFrame.origin.y,
+                           width: cropedObjectFrame.size.width,
+                           height: cropedObjectFrame.size.height)
         
         return frame.contains(point)
     }
