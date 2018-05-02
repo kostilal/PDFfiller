@@ -33,7 +33,7 @@ class EllipseShape: DragableShape {
     }
     
     private func getEllipseShapePath(rect: CGRect) -> UIBezierPath {
-        let path =  UIBezierPath(roundedRect: rect, cornerRadius: radius)
+        let path = UIBezierPath(roundedRect: rect, cornerRadius: radius)
         
         return path
     }

@@ -23,6 +23,7 @@ class CropView: UIView, CropViewProtocol {
     private var ellipseShapes = [EllipseShape]()
     private let rectangleShape = CAShapeLayer()
     private var initialPositions: [CGPoint]
+     private var dragableShape: DragableShape?
     
     var cropedObjectFrame: CGRect
     var shapePositions: [CGPoint]?
@@ -132,7 +133,7 @@ class CropView: UIView, CropViewProtocol {
         return CGPoint(x: x, y: y)
     }
     
-    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         let touch = touches.first
         
         guard let point = touch?.location(in: self) else { return }
@@ -140,15 +141,29 @@ class CropView: UIView, CropViewProtocol {
         
         for layer in sublayers {
             if let path = layer.path, path.contains(point) {
-                guard let circle = layer as? CircleShape, let pos = touch?.location(in: self) else {
-                    return
+                if let circle = circleShapes.first(where: {$0 == layer}) {
+                    dragableShape = circle
                 }
-                
-                circle.centerPoint = pos
-                drawRectangleLayer()
-                redrawEllipseLayers()
             }
         }
+    }
+    
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        let touch = touches.first
+        
+        guard let shape = dragableShape, let point = touch?.location(in: self) else { return }
+        
+        shape.centerPoint = point
+        redrawEllipseLayers()
+        drawRectangleLayer()
+    }
+    
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        dragableShape = nil
+    }
+    
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        dragableShape = nil
     }
     
 //    func testVisualStuff() {
