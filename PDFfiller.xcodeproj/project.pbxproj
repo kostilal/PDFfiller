@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		95F4878E2099BBF000CAF4C9 /* DragableShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95F4878D2099BBF000CAF4C9 /* DragableShape.swift */; };
 		C44C5B3D20974AE70055124B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C44C5B3C20974AE70055124B /* AppDelegate.swift */; };
 		C44C5B4420974AE80055124B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C44C5B4320974AE80055124B /* Assets.xcassets */; };
 		C44C5B5420974B540055124B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C44C5B4F20974B540055124B /* LaunchScreen.storyboard */; };
@@ -21,6 +22,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		95F4878D2099BBF000CAF4C9 /* DragableShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragableShape.swift; sourceTree = "<group>"; };
 		C44C5B3920974AE70055124B /* PDFfiller.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PDFfiller.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C44C5B3C20974AE70055124B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C44C5B4320974AE80055124B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -126,6 +128,7 @@
 			children = (
 				C44C5B6A2098ECD70055124B /* CircleShape.swift */,
 				C44C5B6C2098ED1B0055124B /* EllipseShape.swift */,
+				95F4878D2099BBF000CAF4C9 /* DragableShape.swift */,
 			);
 			path = Layers;
 			sourceTree = "<group>";
@@ -203,6 +206,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C44C5B5A20974F780055124B /* UIViewExtention.swift in Sources */,
+				95F4878E2099BBF000CAF4C9 /* DragableShape.swift in Sources */,
 				C44C5B3D20974AE70055124B /* AppDelegate.swift in Sources */,
 				C44C5B6D2098ED1B0055124B /* EllipseShape.swift in Sources */,
 				C44C5B5E209756CB0055124B /* CropViewController.swift in Sources */,

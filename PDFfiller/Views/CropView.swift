@@ -60,8 +60,6 @@ class CropView: UIView, CropViewProtocol {
     open func drawShapes() {
         drawDragLayers()
         drawRectangleLayer()
-        
-        testVisualStuff()
     }
     
     open func redrawShapes(_ cropedObjectFrame: CGRect?) {
@@ -158,12 +156,12 @@ class CropView: UIView, CropViewProtocol {
 //            self.circleShapes.forEach({ (shape) in
 //                shape.color = .red
 //            })
-//            
+//
 //            self.ellipseShapes.forEach({ (shape) in
 //                shape.color = .yellow
 //            })
 //        }
-//        
+//
 //        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
 //            self.circleShapes.forEach({ (shape) in
 //                shape.radius = 5
