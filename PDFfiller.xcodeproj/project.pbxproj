@@ -16,6 +16,8 @@
 		C44C5B5E209756CB0055124B /* CropViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C44C5B5D209756CB0055124B /* CropViewController.swift */; };
 		C44C5B60209757750055124B /* Crop.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C44C5B5F209757750055124B /* Crop.storyboard */; };
 		C44C5B62209793620055124B /* CropView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C44C5B61209793620055124B /* CropView.swift */; };
+		C44C5B6B2098ECD70055124B /* CircleShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = C44C5B6A2098ECD70055124B /* CircleShape.swift */; };
+		C44C5B6D2098ED1B0055124B /* EllipseShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = C44C5B6C2098ED1B0055124B /* EllipseShape.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +32,8 @@
 		C44C5B5D209756CB0055124B /* CropViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropViewController.swift; sourceTree = "<group>"; };
 		C44C5B5F209757750055124B /* Crop.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Crop.storyboard; sourceTree = "<group>"; };
 		C44C5B61209793620055124B /* CropView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropView.swift; sourceTree = "<group>"; };
+		C44C5B6A2098ECD70055124B /* CircleShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleShape.swift; sourceTree = "<group>"; };
+		C44C5B6C2098ED1B0055124B /* EllipseShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EllipseShape.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,6 +66,7 @@
 		C44C5B3B20974AE70055124B /* PDFfiller */ = {
 			isa = PBXGroup;
 			children = (
+				C44C5B692098ECA60055124B /* Layers */,
 				C44C5B5220974B540055124B /* Common */,
 				C44C5B5120974B540055124B /* Controllers */,
 				C44C5B4E20974B540055124B /* Storyboards */,
@@ -114,6 +119,15 @@
 				C44C5B5920974F780055124B /* UIViewExtention.swift */,
 			);
 			path = Extentions;
+			sourceTree = "<group>";
+		};
+		C44C5B692098ECA60055124B /* Layers */ = {
+			isa = PBXGroup;
+			children = (
+				C44C5B6A2098ECD70055124B /* CircleShape.swift */,
+				C44C5B6C2098ED1B0055124B /* EllipseShape.swift */,
+			);
+			path = Layers;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -190,7 +204,9 @@
 			files = (
 				C44C5B5A20974F780055124B /* UIViewExtention.swift in Sources */,
 				C44C5B3D20974AE70055124B /* AppDelegate.swift in Sources */,
+				C44C5B6D2098ED1B0055124B /* EllipseShape.swift in Sources */,
 				C44C5B5E209756CB0055124B /* CropViewController.swift in Sources */,
+				C44C5B6B2098ECD70055124B /* CircleShape.swift in Sources */,
 				C44C5B5720974B820055124B /* MainViewController.swift in Sources */,
 				C44C5B62209793620055124B /* CropView.swift in Sources */,
 			);
