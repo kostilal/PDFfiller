@@ -40,6 +40,8 @@ class CropView: UIView, CropViewProtocol {
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    
 
     private func defaultSetup() {
         backgroundColor = .clear
@@ -58,6 +60,8 @@ class CropView: UIView, CropViewProtocol {
     open func drawShapes() {
         drawDragLayers()
         drawRectangleLayer()
+        
+        testVisualStuff()
     }
     
     open func redrawShapes(_ cropedObjectFrame: CGRect?) {
@@ -74,14 +78,18 @@ class CropView: UIView, CropViewProtocol {
         let startPositions = shapePositions ?? initialPositions
         
         for i in 0..<startPositions.count {
-            let circleShape = CircleShape(centerPoint: initialPositions[i])
-            
+            let circleShape = CircleShape()
+            circleShape.centerPoint = startPositions[i]
             layer.addSublayer(circleShape)
             circleShapes.append(circleShape)
             
             let nextIndex = i + 1 == startPositions.count ? 0 : i + 1
             let midPoint = findCeneterBetween(point: startPositions[i], andPoint: startPositions[nextIndex])
-            let ellipseShape = EllipseShape(centerPoint: midPoint, angle: i % 2 == 0 ? 0 : 90)
+            let angle = i % 2 == 0 ? 0 : 90
+            
+            let ellipseShape = EllipseShape()
+            ellipseShape.centerPoint = midPoint
+            ellipseShape.angle = angle
             layer.addSublayer(ellipseShape)
             ellipseShapes.append(ellipseShape)
         }
@@ -144,4 +152,38 @@ class CropView: UIView, CropViewProtocol {
             }
         }
     }
+    
+//    func testVisualStuff() {
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+//            self.circleShapes.forEach({ (shape) in
+//                shape.color = .red
+//            })
+//            
+//            self.ellipseShapes.forEach({ (shape) in
+//                shape.color = .yellow
+//            })
+//        }
+//        
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+//            self.circleShapes.forEach({ (shape) in
+//                shape.radius = 5
+//            })
+//
+//            self.ellipseShapes.forEach({ (shape) in
+//                shape.radius = 2
+//            })
+//        }
+//
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+//            self.ellipseShapes.forEach({ (shape) in
+//                shape.size = CGSize(width: 70, height: 20)
+//            })
+//        }
+//
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+//            self.ellipseShapes.forEach({ (shape) in
+//                shape.angle = 10
+//            })
+//        }
+//    }
 }

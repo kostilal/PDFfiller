@@ -9,55 +9,52 @@
 import UIKit
 
 class EllipseShape: CAShapeLayer {
-    var centerPoint: CGPoint {
+    var centerPoint: CGPoint = CGPoint.zero {
         didSet {
             redraw()
         }
     }
     
-    var radius: CGFloat {
+    var radius: CGFloat  = 10 {
         didSet {
             redraw()
         }
     }
     
-    var color: UIColor {
+    var color: UIColor = UIColor(red: 0/255, green: 134/255, blue: 234/255, alpha: 1) {
         didSet {
             redraw()
         }
     }
     
-    var size: CGSize {
+    var size: CGSize = CGSize(width: 40, height: 10) {
         didSet {
             redraw()
         }
     }
     
-    var angle: Int {
+    var angle: Int = 0 {
         didSet {
             redraw()
         }
     }
-    
-    init(centerPoint: CGPoint = CGPoint.zero,
-         angle: Int = 0,
-         radius: CGFloat = 10,
-         color: UIColor = UIColor(red: 0/255, green: 134/255, blue: 234/255, alpha: 1),
-         size: CGSize = CGSize(width: 40, height: 10)) {
-        
-        self.centerPoint = centerPoint
-        self.radius = radius
-        self.color = color
-        self.size = size
-        self.angle = angle
-        
+
+    override init() {
         super.init()
         
         redraw()
     }
     
     required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        super.init(coder: aDecoder)
+        
+        redraw()
+    }
+    
+    override init(layer: Any) {
+        super.init(layer: layer)
+        
+        redraw()
     }
     
     func redraw() {
@@ -67,7 +64,7 @@ class EllipseShape: CAShapeLayer {
                                                 width: size.width,
                                                 height: size.height)).cgPath
         
-        setAffineTransform(CGAffineTransform(rotationAngle: CGFloat(angle.degreesToRadians)))
+//        setAffineTransform(CGAffineTransform(rotationAngle: CGFloat(angle.degreesToRadians)))
     }
     
     private func getEllipseShapePath(rect: CGRect) -> UIBezierPath {
