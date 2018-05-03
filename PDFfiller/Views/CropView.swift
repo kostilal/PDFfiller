@@ -183,12 +183,10 @@ class CropView: UIView, CropViewProtocol {
         let touch = touches.first
         
         guard let point = touch?.location(in: self) else { return }
-        guard let previousPoint = touch?.preciseLocation(in: self) else { return }
         guard let dragableShape = dragableShape, validate(shape: dragableShape, contain: point) else { return }
         
         if let circle = dragableShape as? CircleShape {
             if !validateDraging(circle: circle) {
-//                dragCircleShape(circle, previousPoint)s
                 return
             }
             dragCircleShape(circle, point)
@@ -217,17 +215,21 @@ class CropView: UIView, CropViewProtocol {
         
         if shape.axis == .horizontal {
             circlesIndexes?.forEach({ (index) in
+                
                 let circle = circleShapes[index]
-//                let distance = circle.centerPoint.y - point.y
-                circle.centerPoint = CGPoint(x: circle.centerPoint.x, y: point.y)
+                let distance = abs(circle.centerPoint.y - point.y)
+                let offset = circle.centerPoint.y > point.y  ? -distance : distance
+                circle.centerPoint = CGPoint(x: circle.centerPoint.x, y: point.y + offset)
+                
+                print("point: \(point.y) ||| circleStartPoint: \(circle.centerPoint) ||| distance: \(distance) ||| offset: \(offset) ||| circleEndPoint: \(circle.centerPoint)")
             })
             
             shape.centerPoint = CGPoint(x: shape.centerPoint.x, y: point.y)
         } else {
             circlesIndexes?.forEach({ (index) in
                 let circle = circleShapes[index]
-//                let distance = abs(circle.centerPoint.x - point.x)
-                circle.centerPoint = CGPoint(x: point.x, y: circle.centerPoint.y)
+                let distance = abs(circle.centerPoint.x - point.x)
+                circle.centerPoint = CGPoint(x: point.x - distance, y: circle.centerPoint.y)
             })
             
             shape.centerPoint = CGPoint(x: point.x, y: shape.centerPoint.y)
