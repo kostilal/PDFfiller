@@ -14,6 +14,11 @@ struct ShapesCorrespondenceTable {
     var circleIndexes: [Int]
 }
 
+struct Line {
+    var pointA: CGPoint
+    var pointB: CGPoint
+}
+
 extension BinaryInteger {
     var degreesToRadians: CGFloat { return CGFloat(Int(self)) * .pi / 180 }
 }
@@ -149,6 +154,14 @@ class CropView: UIView, CropViewProtocol {
         return CGFloat(sqrt((xDist * xDist) + (yDist * yDist)))
     }
     
+    func lineContains(point: CGPoint, line: Line) -> Bool {
+        print("Dstans A+C+B+C : \(round(findDistanceBetween(point: line.pointA, point: point) + findDistanceBetween(point: line.pointB, point: point)))")
+        print("DIstans A+B : \(round(findDistanceBetween(point: line.pointA, point: line.pointB)))")
+        
+        
+        return round(findDistanceBetween(point: line.pointA, point: point) + findDistanceBetween(point: line.pointB, point: point)) == round(findDistanceBetween(point: line.pointA, point: line.pointB))
+    }
+    
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         let touch = touches.first
         
@@ -170,9 +183,14 @@ class CropView: UIView, CropViewProtocol {
         let touch = touches.first
         
         guard let point = touch?.location(in: self) else { return }
+        guard let previousPoint = touch?.preciseLocation(in: self) else { return }
         guard let dragableShape = dragableShape, validate(shape: dragableShape, contain: point) else { return }
         
         if let circle = dragableShape as? CircleShape {
+            if !validateDraging(circle: circle) {
+//                dragCircleShape(circle, previousPoint)s
+                return
+            }
             dragCircleShape(circle, point)
         } else if let ellipse = dragableShape as? EllipseShape {
             dragEllipseShape(ellipse, point)
@@ -200,16 +218,16 @@ class CropView: UIView, CropViewProtocol {
         if shape.axis == .horizontal {
             circlesIndexes?.forEach({ (index) in
                 let circle = circleShapes[index]
-                let distance = circle.centerPoint.y - point.y
-                circle.centerPoint = CGPoint(x: circle.centerPoint.x, y: circle.centerPoint.y - distance)
+//                let distance = circle.centerPoint.y - point.y
+                circle.centerPoint = CGPoint(x: circle.centerPoint.x, y: point.y)
             })
             
             shape.centerPoint = CGPoint(x: shape.centerPoint.x, y: point.y)
         } else {
             circlesIndexes?.forEach({ (index) in
                 let circle = circleShapes[index]
-                let distance = circle.centerPoint.x - point.x
-                circle.centerPoint = CGPoint(x: circle.centerPoint.x - distance, y: circle.centerPoint.y)
+//                let distance = abs(circle.centerPoint.x - point.x)
+                circle.centerPoint = CGPoint(x: point.x, y: circle.centerPoint.y)
             })
             
             shape.centerPoint = CGPoint(x: point.x, y: shape.centerPoint.y)
@@ -226,5 +244,15 @@ class CropView: UIView, CropViewProtocol {
                            height: cropedObjectFrame.size.height)
         
         return frame.contains(point)
+    }
+    
+    func validateDraging(circle: CircleShape) -> Bool {
+        guard let shapeIndex = circleShapes.index(of: circle) else { return false }
+        
+        let pointA = circleShapes[(shapeIndex + 1 > circleShapes.count - 1) ? 0 : shapeIndex + 1].centerPoint
+        let pointB = circleShapes[(shapeIndex - 1 < 0) ? circleShapes.count - 1 : shapeIndex - 1].centerPoint
+        let line = Line(pointA: pointA, pointB: pointB)
+
+        return !lineContains(point: circle.centerPoint, line: line)
     }
 }
