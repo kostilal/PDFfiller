@@ -56,8 +56,8 @@ class CropView: UIView, CropViewProtocol {
     }
     
     private class func calculateInitialPositions(_ cropedObjectFrame: CGRect) -> [CGPoint] {
-        return [CGPoint(x: cropedObjectFrame.origin.x, y: cropedObjectFrame.origin.y),
-                CGPoint(x: cropedObjectFrame.origin.x + cropedObjectFrame.size.width, y: cropedObjectFrame.origin.y),
+        return [CGPoint(x: cropedObjectFrame.origin.x, y: cropedObjectFrame.origin.y + 40),
+                CGPoint(x: cropedObjectFrame.origin.x + cropedObjectFrame.size.width, y: cropedObjectFrame.origin.y + 40),
                 CGPoint(x: cropedObjectFrame.origin.x + cropedObjectFrame.size.width, y: cropedObjectFrame.origin.y + cropedObjectFrame.size.height),
                 CGPoint(x: cropedObjectFrame.origin.x, y: cropedObjectFrame.origin.y + cropedObjectFrame.size.height)]
     }
@@ -87,6 +87,8 @@ class CropView: UIView, CropViewProtocol {
             layer.addSublayer(circleShape)
             circleShapes.append(circleShape)
             
+            print("circleShape.centerPoint", circleShape.centerPoint)
+            
             let nextIndex = i + 1 == startPositions.count ? 0 : i + 1
             let midPoint = findCeneterBetween(point: startPositions[i], andPoint: startPositions[nextIndex])
             let angle = i % 2 == 0 ? 0 : 90
@@ -94,7 +96,7 @@ class CropView: UIView, CropViewProtocol {
             
             let ellipseShape = EllipseShape()
             ellipseShape.centerPoint = midPoint
-            ellipseShape.angle = angle
+            ellipseShape.angle = angle.degreesToRadians
             ellipseShape.axis = axis
             layer.addSublayer(ellipseShape)
             ellipseShapes.append(ellipseShape)
@@ -102,6 +104,9 @@ class CropView: UIView, CropViewProtocol {
             let shapeCorrespondenceTable = ShapesCorrespondenceTable(ellipseIndex: i, circleIndexes: [i, nextIndex])
             correspondenceTable.append(shapeCorrespondenceTable)
         }
+        
+        setCicleShapesPositionType()
+        setEllipseShapesPositionType()
     }
     
     private func drawRectangleLayer() {
@@ -173,9 +178,15 @@ class CropView: UIView, CropViewProtocol {
         guard let dragableShape = dragableShape, validate(shape: dragableShape, contain: point) else { return }
         
         if let circle = dragableShape as? CircleShape {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
             dragCircleShape(circle, point)
+            rotateEllipses(forCicle: circle)
+            CATransaction.commit()
+            
         } else if let ellipse = dragableShape as? EllipseShape {
             dragEllipseShape(ellipse, point)
+            print(ellipse.positionType)
         }
     }
     
@@ -215,7 +226,7 @@ class CropView: UIView, CropViewProtocol {
             shape.centerPoint = CGPoint(x: point.x, y: shape.centerPoint.y)
         }
         
-        redrawEllipseLayers()
+        //redrawEllipseLayers()
         drawRectangleLayer()
     }
     
@@ -226,5 +237,73 @@ class CropView: UIView, CropViewProtocol {
                            height: cropedObjectFrame.size.height + shape.radius)
         
         return frame.contains(point)
+    }
+}
+
+private extension CropView {
+    
+    func setCicleShapesPositionType() {
+        
+        for (index, shape) in circleShapes.enumerated() {
+            switch index {
+                case 0:
+                    shape.positionType = .topLeft
+                case 1:
+                    shape.positionType = .topRight
+                case 2:
+                    shape.positionType = .bottomRight
+                case 3:
+                    shape.positionType = .bottomLeft
+                default:
+                    break
+            }
+        }
+    }
+    
+    func setEllipseShapesPositionType() {
+        
+        for (index, shape) in ellipseShapes.enumerated() {
+            switch index {
+            case 0:
+                shape.positionType = .top
+            case 1:
+                shape.positionType = .right
+            case 2:
+                shape.positionType = .bottom
+            case 3:
+                shape.positionType = .left
+            default:
+                break
+            }
+        }
+    }
+    
+    func rotateEllipses(forCicle cicle: CircleShape) {
+        
+        switch cicle.positionType {
+        case .topLeft:
+            if let topRight = circleShapes.first(where: { $0.positionType == CircleShape.PositionType.topRight }) {
+                let angle = cicle.centerPoint.horizontalAngle(forPoint: topRight.centerPoint)
+                print("angle", angle)
+                print("cicle.position", cicle.centerPoint, "topRight.position", topRight.centerPoint)
+                
+                if let top = ellipseShapes.first(where: { $0.positionType == EllipseShape.PositionType.top }) {
+                    //top.setAffineTransform(CGAffineTransform(rotationAngle: angle))
+                    top.angle = angle
+                }
+            }
+            
+            
+            
+//        case 1:
+//            //shape.positionType = .topRight
+//        case 2:
+//            //shape.positionType = .bottomRight
+//        case 3:
+//            //shape.positionType = .bottomLeft
+        default:
+            return
+        }
+    
     }
 }
