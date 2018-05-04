@@ -56,8 +56,8 @@ class CropView: UIView, CropViewProtocol {
     }
     
     private class func calculateInitialPositions(_ cropedObjectFrame: CGRect) -> [CGPoint] {
-        return [CGPoint(x: cropedObjectFrame.origin.x, y: cropedObjectFrame.origin.y + 40),
-                CGPoint(x: cropedObjectFrame.origin.x + cropedObjectFrame.size.width, y: cropedObjectFrame.origin.y + 40),
+        return [CGPoint(x: cropedObjectFrame.origin.x, y: cropedObjectFrame.origin.y),
+                CGPoint(x: cropedObjectFrame.origin.x + cropedObjectFrame.size.width, y: cropedObjectFrame.origin.y),
                 CGPoint(x: cropedObjectFrame.origin.x + cropedObjectFrame.size.width, y: cropedObjectFrame.origin.y + cropedObjectFrame.size.height),
                 CGPoint(x: cropedObjectFrame.origin.x, y: cropedObjectFrame.origin.y + cropedObjectFrame.size.height)]
     }
@@ -86,8 +86,6 @@ class CropView: UIView, CropViewProtocol {
             circleShape.centerPoint = startPositions[i]
             layer.addSublayer(circleShape)
             circleShapes.append(circleShape)
-            
-            print("circleShape.centerPoint", circleShape.centerPoint)
             
             let nextIndex = i + 1 == startPositions.count ? 0 : i + 1
             let midPoint = findCeneterBetween(point: startPositions[i], andPoint: startPositions[nextIndex])
@@ -282,28 +280,65 @@ private extension CropView {
         
         switch cicle.positionType {
         case .topLeft:
-            if let topRight = circleShapes.first(where: { $0.positionType == CircleShape.PositionType.topRight }) {
-                let angle = cicle.centerPoint.horizontalAngle(forPoint: topRight.centerPoint)
-                print("angle", angle)
-                print("cicle.position", cicle.centerPoint, "topRight.position", topRight.centerPoint)
-                
-                if let top = ellipseShapes.first(where: { $0.positionType == EllipseShape.PositionType.top }) {
-                    //top.setAffineTransform(CGAffineTransform(rotationAngle: angle))
-                    top.angle = angle
-                }
-            }
             
+            let topRightPoint = getCircleShapeCenterPoint(byPosition: .topRight)
+            let topEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: topRightPoint)
+            let topEllipse = getEllipseShape(byPosition: .top)
+            topEllipse.angle = topEllipseAngle
             
+            let bottomLeftPoint = getCircleShapeCenterPoint(byPosition: .bottomLeft)
+            let leftEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: bottomLeftPoint)
+            let leftEllipse = getEllipseShape(byPosition: .left)
+            leftEllipse.angle = leftEllipseAngle
             
-//        case 1:
-//            //shape.positionType = .topRight
-//        case 2:
-//            //shape.positionType = .bottomRight
-//        case 3:
-//            //shape.positionType = .bottomLeft
-        default:
-            return
+        case .topRight:
+            let topLeftPoint = getCircleShapeCenterPoint(byPosition: .topLeft)
+            let topEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: topLeftPoint)
+            let topEllipse = getEllipseShape(byPosition: .top)
+            topEllipse.angle = topEllipseAngle
+            
+            let bottomRightPoint = getCircleShapeCenterPoint(byPosition: .bottomRight)
+            let rightEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: bottomRightPoint)
+            let rightEllipse = getEllipseShape(byPosition: .right)
+            rightEllipse.angle = rightEllipseAngle
+            
+          case .bottomLeft:
+            let topLeftPoint = getCircleShapeCenterPoint(byPosition: .topLeft)
+            let leftEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: topLeftPoint)
+            let leftEllipse = getEllipseShape(byPosition: .left)
+            leftEllipse.angle = leftEllipseAngle
+            
+            let bottomRightPoint = getCircleShapeCenterPoint(byPosition: .bottomRight)
+            let bottomEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: bottomRightPoint)
+            let bottomEllipse = getEllipseShape(byPosition: .bottom)
+            bottomEllipse.angle = bottomEllipseAngle
+            
+        case .bottomRight:
+            let topRightPoint = getCircleShapeCenterPoint(byPosition: .topRight)
+            let rightEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: topRightPoint)
+            let rightEllipse = getEllipseShape(byPosition: .right)
+            rightEllipse.angle = rightEllipseAngle
+            
+            let bottomLeftPoint = getCircleShapeCenterPoint(byPosition: .bottomLeft)
+            let bottomEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: bottomLeftPoint)
+            let bottomEllipse = getEllipseShape(byPosition: .bottom)
+            bottomEllipse.angle = bottomEllipseAngle
+        }
+    }
+    
+    func getCircleShapeCenterPoint(byPosition positionType: CircleShape.PositionType) -> CGPoint {
+        if let shape = circleShapes.first(where: { $0.positionType == positionType }) {
+            return shape.centerPoint
+        }
+        
+        return CGPoint.zero
+    }
+    
+    func getEllipseShape(byPosition positionType: EllipseShape.PositionType) -> EllipseShape {
+        if let shape = ellipseShapes.first(where: { $0.positionType == positionType }) {
+            return shape
         }
     
+        return EllipseShape()
     }
 }

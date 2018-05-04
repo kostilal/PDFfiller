@@ -38,29 +38,20 @@ class EllipseShape: DragableShape {
     
     override func redraw() {
         super.redraw()
-        self.frame = CGRect(x: centerPoint.x - size.width/2,
-                            y: centerPoint.y - size.height/2,
-                            width: size.width,
-                            height: size.height)
         
-        path = getEllipseShapePath(rect: CGRect(x: 0.0,
-                                                y: 0.0,
-                                                width: size.width,
-                                                height: size.height)).cgPath
-        
-        setAffineTransform(CGAffineTransform(rotationAngle: angle))
+        let rect = CGRect(x: centerPoint.x - size.width/2, y: centerPoint.y - size.height/2, width: size.width, height: size.height)
+        path = getEllipseShapePath(rect: rect).cgPath
     }
     
     private func getEllipseShapePath(rect: CGRect) -> UIBezierPath {
         let path = UIBezierPath(roundedRect: rect, cornerRadius: radius)
         
-//        var pathTransform  = CGAffineTransform.identity
-//        pathTransform = pathTransform.translatedBy(x: centerPoint.x, y: centerPoint.y)
-//        pathTransform = pathTransform.rotated(by: angle.degreesToRadians)
-//        pathTransform = pathTransform.translatedBy(x: -centerPoint.x, y: -centerPoint.y)
-//
-//        path.apply(pathTransform)
-//
+        var pathTransform  = CGAffineTransform.identity
+        pathTransform = pathTransform.translatedBy(x: centerPoint.x, y: centerPoint.y)
+        pathTransform = pathTransform.rotated(by: angle)
+        pathTransform = pathTransform.translatedBy(x: -centerPoint.x, y: -centerPoint.y)
+        path.apply(pathTransform)
+
         return path
     }
 }
