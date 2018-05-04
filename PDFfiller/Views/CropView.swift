@@ -178,8 +178,10 @@ class CropView: UIView, CropViewProtocol {
         if let circle = dragableShape as? CircleShape {
             CATransaction.begin()
             CATransaction.setDisableActions(true)
+            
             dragCircleShape(circle, point)
-            rotateEllipses(forCicle: circle)
+            changeEllipseAngle(forChangedCorner: circle)
+            
             CATransaction.commit()
             
         } else if let ellipse = dragableShape as? EllipseShape {
@@ -276,53 +278,45 @@ private extension CropView {
         }
     }
     
-    func rotateEllipses(forCicle cicle: CircleShape) {
+    func changeEllipseAngle(forChangedCorner corner: CircleShape) {
+        let cornerPoint = corner.centerPoint
         
-        switch cicle.positionType {
+        switch corner.positionType {
         case .topLeft:
-            
             let topRightPoint = getCircleShapeCenterPoint(byPosition: .topRight)
-            let topEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: topRightPoint)
             let topEllipse = getEllipseShape(byPosition: .top)
-            topEllipse.angle = topEllipseAngle
-            
             let bottomLeftPoint = getCircleShapeCenterPoint(byPosition: .bottomLeft)
-            let leftEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: bottomLeftPoint)
             let leftEllipse = getEllipseShape(byPosition: .left)
-            leftEllipse.angle = leftEllipseAngle
+            
+            topEllipse.positionAlongLine(withStartingPoint: cornerPoint, andSecond: topRightPoint)
+            leftEllipse.positionAlongLine(withStartingPoint: cornerPoint, andSecond: bottomLeftPoint)
             
         case .topRight:
             let topLeftPoint = getCircleShapeCenterPoint(byPosition: .topLeft)
-            let topEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: topLeftPoint)
             let topEllipse = getEllipseShape(byPosition: .top)
-            topEllipse.angle = topEllipseAngle
-            
             let bottomRightPoint = getCircleShapeCenterPoint(byPosition: .bottomRight)
-            let rightEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: bottomRightPoint)
             let rightEllipse = getEllipseShape(byPosition: .right)
-            rightEllipse.angle = rightEllipseAngle
+            
+            topEllipse.positionAlongLine(withStartingPoint: cornerPoint, andSecond: topLeftPoint)
+            rightEllipse.positionAlongLine(withStartingPoint: cornerPoint, andSecond: bottomRightPoint)
             
           case .bottomLeft:
             let topLeftPoint = getCircleShapeCenterPoint(byPosition: .topLeft)
-            let leftEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: topLeftPoint)
             let leftEllipse = getEllipseShape(byPosition: .left)
-            leftEllipse.angle = leftEllipseAngle
-            
             let bottomRightPoint = getCircleShapeCenterPoint(byPosition: .bottomRight)
-            let bottomEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: bottomRightPoint)
             let bottomEllipse = getEllipseShape(byPosition: .bottom)
-            bottomEllipse.angle = bottomEllipseAngle
+            
+            leftEllipse.positionAlongLine(withStartingPoint: cornerPoint, andSecond: topLeftPoint)
+            bottomEllipse.positionAlongLine(withStartingPoint: cornerPoint, andSecond: bottomRightPoint)
             
         case .bottomRight:
             let topRightPoint = getCircleShapeCenterPoint(byPosition: .topRight)
-            let rightEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: topRightPoint)
             let rightEllipse = getEllipseShape(byPosition: .right)
-            rightEllipse.angle = rightEllipseAngle
-            
             let bottomLeftPoint = getCircleShapeCenterPoint(byPosition: .bottomLeft)
-            let bottomEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: bottomLeftPoint)
             let bottomEllipse = getEllipseShape(byPosition: .bottom)
-            bottomEllipse.angle = bottomEllipseAngle
+            
+            rightEllipse.positionAlongLine(withStartingPoint: cornerPoint, andSecond: topRightPoint)
+            bottomEllipse.positionAlongLine(withStartingPoint: cornerPoint, andSecond: bottomLeftPoint)
         }
     }
     
