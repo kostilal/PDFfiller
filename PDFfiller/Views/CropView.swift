@@ -198,8 +198,13 @@ class CropView: UIView, CropViewProtocol {
             if !validateDraging(ellipse: ellipse, touchPoint: point) {
                 return
             }
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
             dragEllipseShape(ellipse, point)
-            print(ellipse.positionType)
+            circleShapes.forEach { (circle) in
+                rotateEllipses(forCicle: circle)
+            }
+            CATransaction.commit()
         }
     }
     
@@ -226,7 +231,7 @@ class CropView: UIView, CropViewProtocol {
                 let circle = circleShapes[index]
                 let distance = abs(circle.centerPoint.x - point.x)
                 let offset = circle.centerPoint.x > point.x  ? -distance : distance
-                circle.centerPoint = CGPoint(x: point.x, y: circle.centerPoint.y)
+                circle.centerPoint = CGPoint(x: point.x + offset, y: circle.centerPoint.y)
             })
             
             shape.centerPoint = CGPoint(x: point.x, y: shape.centerPoint.y)
@@ -235,13 +240,13 @@ class CropView: UIView, CropViewProtocol {
                 let circle = circleShapes[index]
                 let distance = abs(circle.centerPoint.y - point.y)
                 let offset = circle.centerPoint.y > point.y  ? -distance : distance
-                circle.centerPoint = CGPoint(x: circle.centerPoint.x, y: point.y)
+                circle.centerPoint = CGPoint(x: circle.centerPoint.x, y: point.y + offset)
             })
             
             shape.centerPoint = CGPoint(x: shape.centerPoint.x, y: point.y)
         }
         
-        //redrawEllipseLayers()
+        redrawEllipseLayers()
         drawRectangleLayer()
     }
     
