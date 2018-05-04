@@ -99,7 +99,7 @@ class CropView: UIView, CropViewProtocol {
             
             let ellipseShape = EllipseShape()
             ellipseShape.centerPoint = midPoint
-            ellipseShape.angle = angle
+            ellipseShape.angle = angle.degreesToRadians
             ellipseShape.axis = axis
             layer.addSublayer(ellipseShape)
             ellipseShapes.append(ellipseShape)
@@ -107,6 +107,9 @@ class CropView: UIView, CropViewProtocol {
             let shapeCorrespondenceTable = ShapesCorrespondenceTable(ellipseIndex: i, circleIndexes: [i, nextIndex])
             correspondenceTable.append(shapeCorrespondenceTable)
         }
+        
+        setCicleShapesPositionType()
+        setEllipseShapesPositionType()
     }
     
     private func drawRectangleLayer() {
@@ -185,12 +188,18 @@ class CropView: UIView, CropViewProtocol {
             if !validateDraging(circle: circle, touchPoint: point) {
                 return
             }
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
             dragCircleShape(circle, point)
+            rotateEllipses(forCicle: circle)
+            CATransaction.commit()
+            
         } else if let ellipse = dragableShape as? EllipseShape {
             if !validateDraging(ellipse: ellipse, touchPoint: point) {
                 return
             }
             dragEllipseShape(ellipse, point)
+            print(ellipse.positionType)
         }
     }
     
@@ -232,7 +241,7 @@ class CropView: UIView, CropViewProtocol {
             shape.centerPoint = CGPoint(x: shape.centerPoint.x, y: point.y)
         }
         
-        redrawEllipseLayers()
+        //redrawEllipseLayers()
         drawRectangleLayer()
     }
     
@@ -259,5 +268,110 @@ class CropView: UIView, CropViewProtocol {
         }
 
         return !path.contains(touchPoint)
+    }
+}
+
+private extension CropView {
+    
+    func setCicleShapesPositionType() {
+        
+        for (index, shape) in circleShapes.enumerated() {
+            switch index {
+                case 0:
+                    shape.positionType = .topLeft
+                case 1:
+                    shape.positionType = .topRight
+                case 2:
+                    shape.positionType = .bottomRight
+                case 3:
+                    shape.positionType = .bottomLeft
+                default:
+                    break
+            }
+        }
+    }
+    
+    func setEllipseShapesPositionType() {
+        
+        for (index, shape) in ellipseShapes.enumerated() {
+            switch index {
+            case 0:
+                shape.positionType = .top
+            case 1:
+                shape.positionType = .right
+            case 2:
+                shape.positionType = .bottom
+            case 3:
+                shape.positionType = .left
+            default:
+                break
+            }
+        }
+    }
+    
+    func rotateEllipses(forCicle cicle: CircleShape) {
+        
+        switch cicle.positionType {
+        case .topLeft:
+            
+            let topRightPoint = getCircleShapeCenterPoint(byPosition: .topRight)
+            let topEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: topRightPoint)
+            let topEllipse = getEllipseShape(byPosition: .top)
+            topEllipse.angle = topEllipseAngle
+            
+            let bottomLeftPoint = getCircleShapeCenterPoint(byPosition: .bottomLeft)
+            let leftEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: bottomLeftPoint)
+            let leftEllipse = getEllipseShape(byPosition: .left)
+            leftEllipse.angle = leftEllipseAngle
+            
+        case .topRight:
+            let topLeftPoint = getCircleShapeCenterPoint(byPosition: .topLeft)
+            let topEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: topLeftPoint)
+            let topEllipse = getEllipseShape(byPosition: .top)
+            topEllipse.angle = topEllipseAngle
+            
+            let bottomRightPoint = getCircleShapeCenterPoint(byPosition: .bottomRight)
+            let rightEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: bottomRightPoint)
+            let rightEllipse = getEllipseShape(byPosition: .right)
+            rightEllipse.angle = rightEllipseAngle
+            
+          case .bottomLeft:
+            let topLeftPoint = getCircleShapeCenterPoint(byPosition: .topLeft)
+            let leftEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: topLeftPoint)
+            let leftEllipse = getEllipseShape(byPosition: .left)
+            leftEllipse.angle = leftEllipseAngle
+            
+            let bottomRightPoint = getCircleShapeCenterPoint(byPosition: .bottomRight)
+            let bottomEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: bottomRightPoint)
+            let bottomEllipse = getEllipseShape(byPosition: .bottom)
+            bottomEllipse.angle = bottomEllipseAngle
+            
+        case .bottomRight:
+            let topRightPoint = getCircleShapeCenterPoint(byPosition: .topRight)
+            let rightEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: topRightPoint)
+            let rightEllipse = getEllipseShape(byPosition: .right)
+            rightEllipse.angle = rightEllipseAngle
+            
+            let bottomLeftPoint = getCircleShapeCenterPoint(byPosition: .bottomLeft)
+            let bottomEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: bottomLeftPoint)
+            let bottomEllipse = getEllipseShape(byPosition: .bottom)
+            bottomEllipse.angle = bottomEllipseAngle
+        }
+    }
+    
+    func getCircleShapeCenterPoint(byPosition positionType: CircleShape.PositionType) -> CGPoint {
+        if let shape = circleShapes.first(where: { $0.positionType == positionType }) {
+            return shape.centerPoint
+        }
+        
+        return CGPoint.zero
+    }
+    
+    func getEllipseShape(byPosition positionType: EllipseShape.PositionType) -> EllipseShape {
+        if let shape = ellipseShapes.first(where: { $0.positionType == positionType }) {
+            return shape
+        }
+    
+        return EllipseShape()
     }
 }

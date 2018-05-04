@@ -9,6 +9,7 @@
 import UIKit
 
 class DragableShape: CAShapeLayer {
+    
     var centerPoint: CGPoint = CGPoint.zero {
         didSet {
             redraw()

@@ -9,6 +9,14 @@
 import UIKit
 
 class CircleShape: DragableShape {
+    
+    enum PositionType {
+        case topLeft, topRight
+        case bottomLeft, bottomRight
+    }
+    
+    var positionType = PositionType.topLeft
+    
     override func redraw() {
         super.redraw()
         

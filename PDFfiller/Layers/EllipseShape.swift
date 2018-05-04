@@ -14,6 +14,14 @@ enum ShapeAxis {
 }
 
 class EllipseShape: DragableShape {
+    
+    enum PositionType {
+        case top, bottom
+        case left, right
+    }
+    
+    var positionType = PositionType.left
+    
     var axis: ShapeAxis?
     
     var size: CGSize = CGSize(width: 40, height: 10) {
@@ -22,7 +30,7 @@ class EllipseShape: DragableShape {
         }
     }
     
-    var angle: Int = 0 {
+    var angle: CGFloat = 0 {
         didSet {
             redraw()
         }
@@ -31,10 +39,8 @@ class EllipseShape: DragableShape {
     override func redraw() {
         super.redraw()
         
-        path = getEllipseShapePath(rect: CGRect(x: centerPoint.x - size.width/2,
-                                                y: centerPoint.y - size.height/2,
-                                                width: size.width,
-                                                height: size.height)).cgPath
+        let rect = CGRect(x: centerPoint.x - size.width/2, y: centerPoint.y - size.height/2, width: size.width, height: size.height)
+        path = getEllipseShapePath(rect: rect).cgPath
     }
     
     private func getEllipseShapePath(rect: CGRect) -> UIBezierPath {
@@ -42,11 +48,10 @@ class EllipseShape: DragableShape {
         
         var pathTransform  = CGAffineTransform.identity
         pathTransform = pathTransform.translatedBy(x: centerPoint.x, y: centerPoint.y)
-        pathTransform = pathTransform.rotated(by: angle.degreesToRadians)
+        pathTransform = pathTransform.rotated(by: angle)
         pathTransform = pathTransform.translatedBy(x: -centerPoint.x, y: -centerPoint.y)
-        
         path.apply(pathTransform)
-        
+
         return path
     }
 }
