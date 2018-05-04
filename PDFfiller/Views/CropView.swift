@@ -95,7 +95,7 @@ class CropView: UIView, CropViewProtocol {
             let nextIndex = i + 1 == startPositions.count ? 0 : i + 1
             let midPoint = findCeneterBetween(point: startPositions[i], andPoint: startPositions[nextIndex])
             let angle = i % 2 == 0 ? 0 : 90
-            let axis: ShapeAxis = i % 2 == 0 ? .horizontal : .vertical
+            let axis: ShapeAxis = i % 2 == 0 ? .vertical : .horizontal
             
             let ellipseShape = EllipseShape()
             ellipseShape.centerPoint = midPoint
@@ -154,12 +154,8 @@ class CropView: UIView, CropViewProtocol {
         return CGFloat(sqrt((xDist * xDist) + (yDist * yDist)))
     }
     
-    func lineContains(point: CGPoint, line: Line) -> Bool {
-        print("Dstans A+C+B+C : \(round(findDistanceBetween(point: line.pointA, point: point) + findDistanceBetween(point: line.pointB, point: point)))")
-        print("DIstans A+B : \(round(findDistanceBetween(point: line.pointA, point: line.pointB)))")
-        
-        
-        return round(findDistanceBetween(point: line.pointA, point: point) + findDistanceBetween(point: line.pointB, point: point)) == round(findDistanceBetween(point: line.pointA, point: line.pointB))
+    func findArea(point a: CGPoint, point b: CGPoint, point c: CGPoint) -> CGFloat {
+        return ((a.x - b.x) * (a.y + b.y) + (b.x - c.x) * (b.y + c.y) + (c.x - a.x) * (c.y + a.y)) / 2.0
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -186,11 +182,14 @@ class CropView: UIView, CropViewProtocol {
         guard let dragableShape = dragableShape, validate(shape: dragableShape, contain: point) else { return }
         
         if let circle = dragableShape as? CircleShape {
-            if !validateDraging(circle: circle) {
+            if !validateDraging(circle: circle, touchPoint: point) {
                 return
             }
             dragCircleShape(circle, point)
         } else if let ellipse = dragableShape as? EllipseShape {
+            if !validateDraging(ellipse: ellipse, touchPoint: point) {
+                return
+            }
             dragEllipseShape(ellipse, point)
         }
     }
@@ -215,24 +214,22 @@ class CropView: UIView, CropViewProtocol {
         
         if shape.axis == .horizontal {
             circlesIndexes?.forEach({ (index) in
-                
-                let circle = circleShapes[index]
-                let distance = abs(circle.centerPoint.y - point.y)
-                let offset = circle.centerPoint.y > point.y  ? -distance : distance
-                circle.centerPoint = CGPoint(x: circle.centerPoint.x, y: point.y + offset)
-                
-                print("point: \(point.y) ||| circleStartPoint: \(circle.centerPoint) ||| distance: \(distance) ||| offset: \(offset) ||| circleEndPoint: \(circle.centerPoint)")
-            })
-            
-            shape.centerPoint = CGPoint(x: shape.centerPoint.x, y: point.y)
-        } else {
-            circlesIndexes?.forEach({ (index) in
                 let circle = circleShapes[index]
                 let distance = abs(circle.centerPoint.x - point.x)
-                circle.centerPoint = CGPoint(x: point.x - distance, y: circle.centerPoint.y)
+                let offset = circle.centerPoint.x > point.x  ? -distance : distance
+                circle.centerPoint = CGPoint(x: point.x, y: circle.centerPoint.y)
             })
             
             shape.centerPoint = CGPoint(x: point.x, y: shape.centerPoint.y)
+        } else {
+            circlesIndexes?.forEach({ (index) in
+                let circle = circleShapes[index]
+                let distance = abs(circle.centerPoint.y - point.y)
+                let offset = circle.centerPoint.y > point.y  ? -distance : distance
+                circle.centerPoint = CGPoint(x: circle.centerPoint.x, y: point.y)
+            })
+            
+            shape.centerPoint = CGPoint(x: shape.centerPoint.x, y: point.y)
         }
         
         redrawEllipseLayers()
@@ -240,21 +237,27 @@ class CropView: UIView, CropViewProtocol {
     }
     
     func validate(shape: DragableShape, contain point: CGPoint) -> Bool {
-        let frame = CGRect(x: cropedObjectFrame.origin.x,
-                           y: cropedObjectFrame.origin.y,
-                           width: cropedObjectFrame.size.width,
-                           height: cropedObjectFrame.size.height)
-        
-        return frame.contains(point)
+        return cropedObjectFrame.contains(point)
     }
     
-    func validateDraging(circle: CircleShape) -> Bool {
+    func validateDraging(circle: CircleShape, touchPoint: CGPoint) -> Bool {
         guard let shapeIndex = circleShapes.index(of: circle) else { return false }
         
-        let pointA = circleShapes[(shapeIndex + 1 > circleShapes.count - 1) ? 0 : shapeIndex + 1].centerPoint
-        let pointB = circleShapes[(shapeIndex - 1 < 0) ? circleShapes.count - 1 : shapeIndex - 1].centerPoint
-        let line = Line(pointA: pointA, pointB: pointB)
+        let pointA = circleShapes[(shapeIndex - 1 < 0) ? circleShapes.count - 1 : shapeIndex - 1].centerPoint
+        let pointB = touchPoint
+        let pointC = circleShapes[(shapeIndex + 1 > circleShapes.count - 1) ? 0 : shapeIndex + 1].centerPoint
+        let area = findArea(point: pointA, point: pointB, point: pointC)
+        
+        return area > 0
+    }
+    
+    func validateDraging(ellipse: EllipseShape, touchPoint: CGPoint) -> Bool {
+        let oppositeShape = ellipseShapes.first(where: {$0.axis == ellipse.axis && $0 != ellipse})
+        
+        guard let path = oppositeShape?.path else {
+            return false
+        }
 
-        return !lineContains(point: circle.centerPoint, line: line)
+        return !path.contains(touchPoint)
     }
 }
