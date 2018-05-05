@@ -156,14 +156,16 @@ class CropView: UIView, CropViewProtocol {
         let touch = touches.first
         
         guard let point = touch?.location(in: self) else { return }
-        guard let sublayers = layer.sublayers as? [CAShapeLayer] else { return }
+        guard let shapeSublayers = layer.sublayers as? [CAShapeLayer] else { return }
         
-        for layer in sublayers {
-            if let path = layer.path, path.contains(point) {
-                if let circle = circleShapes.first(where: {$0 == layer}) {
+        for shapeLayer in shapeSublayers {
+            if let path = shapeLayer.path, path.contains(point) {
+                if let circle = circleShapes.first(where: {$0 == shapeLayer}) {
                     dragableShape = circle
-                } else if let elipse = ellipseShapes.first(where: {$0 == layer}) {
-                    dragableShape = elipse
+                } else if let ellipse = ellipseShapes.first(where: {$0 == shapeLayer}) {
+                    ellipse.removeFromSuperlayer()
+                    self.layer.addSublayer(ellipse)
+                    dragableShape = ellipse
                 }
             }
         }
@@ -186,7 +188,6 @@ class CropView: UIView, CropViewProtocol {
             
         } else if let ellipse = dragableShape as? EllipseShape {
             dragEllipseShape(ellipse, point)
-            print(ellipse.positionType)
         }
     }
     
@@ -204,18 +205,22 @@ class CropView: UIView, CropViewProtocol {
         drawRectangleLayer()
     }
     
-    func dragEllipseShape(_ shape: EllipseShape, _ point: CGPoint) {
-        let ellipseIndex = ellipseShapes.index(of: shape)
+    func dragEllipseShape(_ ellipse: EllipseShape, _ point: CGPoint) {
+        if !isLineAllowedMoving(toPoint: point, forLinePosition: ellipse.positionType) {
+            return
+        }
+        
+        let ellipseIndex = ellipseShapes.index(of: ellipse)
         let circlesIndexes = correspondenceTable.first(where: {$0.ellipseIndex == ellipseIndex})?.circleIndexes
         
-        if shape.axis == .horizontal {
+        if ellipse.axis == .horizontal {
             circlesIndexes?.forEach({ (index) in
                 let circle = circleShapes[index]
                 let distance = circle.centerPoint.y - point.y
                 circle.centerPoint = CGPoint(x: circle.centerPoint.x, y: circle.centerPoint.y - distance)
             })
             
-            shape.centerPoint = CGPoint(x: shape.centerPoint.x, y: point.y)
+            ellipse.centerPoint = CGPoint(x: ellipse.centerPoint.x, y: point.y)
         } else {
             circlesIndexes?.forEach({ (index) in
                 let circle = circleShapes[index]
@@ -223,10 +228,10 @@ class CropView: UIView, CropViewProtocol {
                 circle.centerPoint = CGPoint(x: circle.centerPoint.x - distance, y: circle.centerPoint.y)
             })
             
-            shape.centerPoint = CGPoint(x: point.x, y: shape.centerPoint.y)
+            ellipse.centerPoint = CGPoint(x: point.x, y: ellipse.centerPoint.y)
         }
         
-        //redrawEllipseLayers()
+        redrawEllipseLayers()
         drawRectangleLayer()
     }
     
@@ -334,5 +339,27 @@ private extension CropView {
         }
     
         return EllipseShape()
+    }
+}
+
+//MARK: - Position Chnage Validation
+private extension CropView {
+ 
+    func isLineAllowedMoving(toPoint point: CGPoint, forLinePosition positionType: EllipseShape.PositionType) -> Bool {
+        
+        switch positionType {
+            case .top:
+                let bottomEllipse = getEllipseShape(byPosition: .bottom)
+                return point.y <= bottomEllipse.centerPoint.y
+            case .bottom:
+                let topEllipse = getEllipseShape(byPosition: .top)
+                return topEllipse.centerPoint.y <= point.y
+            case .left:
+                let rightEllipse = getEllipseShape(byPosition: .right)
+                return point.x <= rightEllipse.centerPoint.x
+            case .right:
+                let leftEllipse = getEllipseShape(byPosition: .left)
+                return leftEllipse.centerPoint.x <= point.x
+        }
     }
 }
