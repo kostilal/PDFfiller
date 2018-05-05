@@ -164,8 +164,6 @@ class CropView: UIView, CropViewProtocol {
                     dragableShape = circle
                 } else if let ellipse = ellipseShapes.first(where: {$0 == shapeLayer}) {
                     bring(sublayer: ellipse, toFront: self.layer)
-                    //ellipse.removeFromSuperlayer()
-                    //self.layer.addSublayer(ellipse)
                     dragableShape = ellipse
                 }
             }
