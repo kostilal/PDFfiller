@@ -187,7 +187,11 @@ class CropView: UIView, CropViewProtocol {
             CATransaction.commit()
             
         } else if let ellipse = dragableShape as? EllipseShape {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            
             dragEllipseShape(ellipse, point)
+            CATransaction.commit()
         }
     }
     
@@ -200,6 +204,11 @@ class CropView: UIView, CropViewProtocol {
     }
     
     func dragCircleShape(_ shape: CircleShape, _ point: CGPoint) {
+        
+        if !isCornerAllowedMoving(toPoint: point, forLinePosition: shape.positionType) {
+            return
+        }
+        
         shape.centerPoint = point
         redrawEllipseLayers()
         drawRectangleLayer()
@@ -360,6 +369,36 @@ private extension CropView {
             case .right:
                 let leftEllipse = getEllipseShape(byPosition: .left)
                 return leftEllipse.centerPoint.x <= point.x
+        }
+    }
+    
+    func isCornerAllowedMoving(toPoint point: CGPoint, forLinePosition positionType:  CircleShape.PositionType) -> Bool {
+        
+        switch positionType {
+            case .topLeft:
+                let topRight = getCircleShapeCenterPoint(byPosition: .topRight)
+                let bottomLeft = getCircleShapeCenterPoint(byPosition: .bottomLeft)
+                let closestPoint = point.closestPointOnLineSegment(startPoint: bottomLeft, endPoint: topRight)
+                
+                return point <= closestPoint
+            case .topRight:
+                let topLeft = getCircleShapeCenterPoint(byPosition: .topLeft)
+                let bottomRight = getCircleShapeCenterPoint(byPosition: .bottomRight)
+                let closestPoint = point.closestPointOnLineSegment(startPoint: topLeft, endPoint: bottomRight)
+                
+                return point.y <= closestPoint.y
+            case .bottomLeft:
+                let topLeft = getCircleShapeCenterPoint(byPosition: .topLeft)
+                let bottomRight = getCircleShapeCenterPoint(byPosition: .bottomRight)
+                let closestPoint = point.closestPointOnLineSegment(startPoint: topLeft, endPoint: bottomRight)
+   
+                return point.x <= closestPoint.x
+            case .bottomRight:
+                let topRight = getCircleShapeCenterPoint(byPosition: .topRight)
+                let bottomLeft = getCircleShapeCenterPoint(byPosition: .bottomLeft)
+                let closestPoint = point.closestPointOnLineSegment(startPoint: bottomLeft, endPoint: topRight)
+    
+                return point >= closestPoint
         }
     }
 }
