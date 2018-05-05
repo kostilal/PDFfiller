@@ -163,8 +163,9 @@ class CropView: UIView, CropViewProtocol {
                 if let circle = circleShapes.first(where: {$0 == shapeLayer}) {
                     dragableShape = circle
                 } else if let ellipse = ellipseShapes.first(where: {$0 == shapeLayer}) {
-                    ellipse.removeFromSuperlayer()
-                    self.layer.addSublayer(ellipse)
+                    bring(sublayer: ellipse, toFront: self.layer)
+                    //ellipse.removeFromSuperlayer()
+                    //self.layer.addSublayer(ellipse)
                     dragableShape = ellipse
                 }
             }
@@ -400,5 +401,10 @@ private extension CropView {
     
                 return point >= closestPoint
         }
+    }
+    
+    func bring(sublayer shapeLayer: CAShapeLayer, toFront front: CALayer) {
+        shapeLayer.removeFromSuperlayer()
+        front.addSublayer(shapeLayer)
     }
 }
