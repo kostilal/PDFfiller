@@ -14,11 +14,6 @@ struct ShapesCorrespondenceTable {
     var circleIndexes: [Int]
 }
 
-struct Line {
-    var pointA: CGPoint
-    var pointB: CGPoint
-}
-
 extension BinaryInteger {
     var degreesToRadians: CGFloat { return CGFloat(Int(self)) * .pi / 180 }
 }
@@ -67,6 +62,7 @@ class CropView: UIView, CropViewProtocol {
                 CGPoint(x: cropedObjectFrame.origin.x, y: cropedObjectFrame.origin.y + cropedObjectFrame.size.height)]
     }
     
+    //MARK: - Drawing
     open func drawShapes() {
         drawDragLayers()
         drawRectangleLayer()
@@ -89,6 +85,7 @@ class CropView: UIView, CropViewProtocol {
         for i in 0..<startPositions.count {
             let circleShape = CircleShape()
             circleShape.centerPoint = startPositions[i]
+            circleShape.backgroundColor = UIColor.yellow.cgColor
             layer.addSublayer(circleShape)
             circleShapes.append(circleShape)
             
@@ -143,7 +140,107 @@ class CropView: UIView, CropViewProtocol {
             shape.centerPoint = startPositions[index]
         }
     }
+  
+    //MARK: - Touches & Dtraging
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        let touch = touches.first
+        
+        guard let point = touch?.location(in: self) else { return }
+        guard let shapeSublayers = layer.sublayers as? [CAShapeLayer] else { return }
+        
+        for shapeLayer in shapeSublayers {
+            if let path = shapeLayer.path, path.contains(point) {
+                if let circle = circleShapes.first(where: {$0 == shapeLayer}) {
+                    dragableShape = circle
+                } else if let ellipse = ellipseShapes.first(where: {$0 == shapeLayer}) {
+                    bring(sublayer: ellipse, toFront: self.layer)
+                    dragableShape = ellipse
+                }
+            }
+        }
+    }
     
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        let touch = touches.first
+        
+        guard let point = touch?.location(in: self) else { return }
+        guard let dragableShape = dragableShape, validate(shape: dragableShape, contain: point) else { return }
+        
+        if let circle = dragableShape as? CircleShape {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            
+            dragCircleShape(circle, point)
+            changeEllipseAngle(forChangedCorner: circle)
+            
+            CATransaction.commit()
+            
+        } else if let ellipse = dragableShape as? EllipseShape {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            
+            dragEllipseShape(ellipse, point)
+            circleShapes.forEach { (circle) in
+                changeEllipseAngle(forChangedCorner: circle)
+            }
+            
+            CATransaction.commit()
+        }
+    }
+    
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        dragableShape = nil
+    }
+    
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        dragableShape = nil
+    }
+    
+    func dragCircleShape(_ shape: CircleShape, _ point: CGPoint) {
+        
+        if !isCornerAllowedMoving(toPoint: point, forLinePosition: shape.positionType) {
+            return
+        }
+        
+        shape.centerPoint = point
+        redrawEllipseLayers()
+        drawRectangleLayer()
+    }
+    
+    func dragEllipseShape(_ ellipse: EllipseShape, _ point: CGPoint) {
+        if !isLineAllowedMoving(toPoint: point, forLinePosition: ellipse.positionType) {
+            return
+        }
+        
+        let ellipseIndex = ellipseShapes.index(of: ellipse)
+        let circlesIndexes = correspondenceTable.first(where: {$0.ellipseIndex == ellipseIndex})?.circleIndexes
+        
+        if ellipse.axis == .horizontal {
+            circlesIndexes?.forEach({ (index) in
+                let circle = circleShapes[index]
+                circle.centerPoint = CGPoint(x: point.x, y: circle.centerPoint.y)
+            })
+
+            ellipse.centerPoint = CGPoint(x: ellipse.centerPoint.x, y: point.y)
+        } else {
+            circlesIndexes?.forEach({ (index) in
+                let circle = circleShapes[index]
+                circle.centerPoint = CGPoint(x: circle.centerPoint.x, y: point.y)
+            })
+            
+            ellipse.centerPoint = CGPoint(x: point.x, y: ellipse.centerPoint.y)
+        }
+        
+        redrawEllipseLayers()
+        drawRectangleLayer()
+    }
+    
+    func validate(shape: DragableShape, contain point: CGPoint) -> Bool {
+        return cropedObjectFrame.contains(point)
+    }
+}
+//MARK: - Helpers
+private extension CropView {
     private func findCeneterBetween(point a: CGPoint, andPoint b: CGPoint) -> CGPoint {
         let x = (a.x + b.x) / 2
         let y = (a.y + b.y) / 2
@@ -159,120 +256,6 @@ class CropView: UIView, CropViewProtocol {
     
     func findArea(point a: CGPoint, point b: CGPoint, point c: CGPoint) -> CGFloat {
         return ((a.x - b.x) * (a.y + b.y) + (b.x - c.x) * (b.y + c.y) + (c.x - a.x) * (c.y + a.y)) / 2.0
-    }
-    
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        let touch = touches.first
-        
-        guard let point = touch?.location(in: self) else { return }
-        guard let sublayers = layer.sublayers as? [CAShapeLayer] else { return }
-        
-        for layer in sublayers {
-            if let path = layer.path, path.contains(point) {
-                if let circle = circleShapes.first(where: {$0 == layer}) {
-                    dragableShape = circle
-                } else if let elipse = ellipseShapes.first(where: {$0 == layer}) {
-                    dragableShape = elipse
-                }
-            }
-        }
-    }
-    
-    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        let touch = touches.first
-        
-        guard let point = touch?.location(in: self) else { return }
-        guard let dragableShape = dragableShape, validate(shape: dragableShape, contain: point) else { return }
-        
-        if let circle = dragableShape as? CircleShape {
-            if !validateDraging(circle: circle, touchPoint: point) {
-                return
-            }
-            CATransaction.begin()
-            CATransaction.setDisableActions(true)
-            dragCircleShape(circle, point)
-            rotateEllipses(forCicle: circle)
-            CATransaction.commit()
-            
-        } else if let ellipse = dragableShape as? EllipseShape {
-            if !validateDraging(ellipse: ellipse, touchPoint: point) {
-                return
-            }
-            CATransaction.begin()
-            CATransaction.setDisableActions(true)
-            dragEllipseShape(ellipse, point)
-            circleShapes.forEach { (circle) in
-                rotateEllipses(forCicle: circle)
-            }
-            CATransaction.commit()
-        }
-    }
-    
-    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        dragableShape = nil
-    }
-    
-    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        dragableShape = nil
-    }
-    
-    func dragCircleShape(_ shape: CircleShape, _ point: CGPoint) {
-        shape.centerPoint = point
-        redrawEllipseLayers()
-        drawRectangleLayer()
-    }
-    
-    func dragEllipseShape(_ shape: EllipseShape, _ point: CGPoint) {
-        let ellipseIndex = ellipseShapes.index(of: shape)
-        let circlesIndexes = correspondenceTable.first(where: {$0.ellipseIndex == ellipseIndex})?.circleIndexes
-        
-        if shape.axis == .horizontal {
-            circlesIndexes?.forEach({ (index) in
-                let circle = circleShapes[index]
-                let distance = abs(circle.centerPoint.x - point.x)
-                let offset = circle.centerPoint.x > point.x  ? -distance : distance
-                circle.centerPoint = CGPoint(x: point.x + offset, y: circle.centerPoint.y)
-            })
-            
-            shape.centerPoint = CGPoint(x: point.x, y: shape.centerPoint.y)
-        } else {
-            circlesIndexes?.forEach({ (index) in
-                let circle = circleShapes[index]
-                let distance = abs(circle.centerPoint.y - point.y)
-                let offset = circle.centerPoint.y > point.y  ? -distance : distance
-                circle.centerPoint = CGPoint(x: circle.centerPoint.x, y: point.y + offset)
-            })
-            
-            shape.centerPoint = CGPoint(x: shape.centerPoint.x, y: point.y)
-        }
-        
-        redrawEllipseLayers()
-        drawRectangleLayer()
-    }
-    
-    func validate(shape: DragableShape, contain point: CGPoint) -> Bool {
-        return cropedObjectFrame.contains(point)
-    }
-    
-    func validateDraging(circle: CircleShape, touchPoint: CGPoint) -> Bool {
-        guard let shapeIndex = circleShapes.index(of: circle) else { return false }
-        
-        let pointA = circleShapes[(shapeIndex - 1 < 0) ? circleShapes.count - 1 : shapeIndex - 1].centerPoint
-        let pointB = touchPoint
-        let pointC = circleShapes[(shapeIndex + 1 > circleShapes.count - 1) ? 0 : shapeIndex + 1].centerPoint
-        let area = findArea(point: pointA, point: pointB, point: pointC)
-        
-        return area > 0
-    }
-    
-    func validateDraging(ellipse: EllipseShape, touchPoint: CGPoint) -> Bool {
-        let oppositeShape = ellipseShapes.first(where: {$0.axis == ellipse.axis && $0 != ellipse})
-        
-        guard let path = oppositeShape?.path else {
-            return false
-        }
-
-        return !path.contains(touchPoint)
     }
 }
 
@@ -314,53 +297,45 @@ private extension CropView {
         }
     }
     
-    func rotateEllipses(forCicle cicle: CircleShape) {
+    func changeEllipseAngle(forChangedCorner corner: CircleShape) {
+        let cornerPoint = corner.centerPoint
         
-        switch cicle.positionType {
+        switch corner.positionType {
         case .topLeft:
-            
             let topRightPoint = getCircleShapeCenterPoint(byPosition: .topRight)
-            let topEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: topRightPoint)
             let topEllipse = getEllipseShape(byPosition: .top)
-            topEllipse.angle = topEllipseAngle
-            
             let bottomLeftPoint = getCircleShapeCenterPoint(byPosition: .bottomLeft)
-            let leftEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: bottomLeftPoint)
             let leftEllipse = getEllipseShape(byPosition: .left)
-            leftEllipse.angle = leftEllipseAngle
+            
+            topEllipse.positionAlongLine(withStartingPoint: cornerPoint, andSecond: topRightPoint)
+            leftEllipse.positionAlongLine(withStartingPoint: cornerPoint, andSecond: bottomLeftPoint)
             
         case .topRight:
             let topLeftPoint = getCircleShapeCenterPoint(byPosition: .topLeft)
-            let topEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: topLeftPoint)
             let topEllipse = getEllipseShape(byPosition: .top)
-            topEllipse.angle = topEllipseAngle
-            
             let bottomRightPoint = getCircleShapeCenterPoint(byPosition: .bottomRight)
-            let rightEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: bottomRightPoint)
             let rightEllipse = getEllipseShape(byPosition: .right)
-            rightEllipse.angle = rightEllipseAngle
+            
+            topEllipse.positionAlongLine(withStartingPoint: cornerPoint, andSecond: topLeftPoint)
+            rightEllipse.positionAlongLine(withStartingPoint: cornerPoint, andSecond: bottomRightPoint)
             
           case .bottomLeft:
             let topLeftPoint = getCircleShapeCenterPoint(byPosition: .topLeft)
-            let leftEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: topLeftPoint)
             let leftEllipse = getEllipseShape(byPosition: .left)
-            leftEllipse.angle = leftEllipseAngle
-            
             let bottomRightPoint = getCircleShapeCenterPoint(byPosition: .bottomRight)
-            let bottomEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: bottomRightPoint)
             let bottomEllipse = getEllipseShape(byPosition: .bottom)
-            bottomEllipse.angle = bottomEllipseAngle
+            
+            leftEllipse.positionAlongLine(withStartingPoint: cornerPoint, andSecond: topLeftPoint)
+            bottomEllipse.positionAlongLine(withStartingPoint: cornerPoint, andSecond: bottomRightPoint)
             
         case .bottomRight:
             let topRightPoint = getCircleShapeCenterPoint(byPosition: .topRight)
-            let rightEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: topRightPoint)
             let rightEllipse = getEllipseShape(byPosition: .right)
-            rightEllipse.angle = rightEllipseAngle
-            
             let bottomLeftPoint = getCircleShapeCenterPoint(byPosition: .bottomLeft)
-            let bottomEllipseAngle = cicle.centerPoint.horizontalAngle(forPoint: bottomLeftPoint)
             let bottomEllipse = getEllipseShape(byPosition: .bottom)
-            bottomEllipse.angle = bottomEllipseAngle
+            
+            rightEllipse.positionAlongLine(withStartingPoint: cornerPoint, andSecond: topRightPoint)
+            bottomEllipse.positionAlongLine(withStartingPoint: cornerPoint, andSecond: bottomLeftPoint)
         }
     }
     
@@ -378,5 +353,61 @@ private extension CropView {
         }
     
         return EllipseShape()
+    }
+}
+
+//MARK: - Position Chnage Validation
+private extension CropView {
+    func isLineAllowedMoving(toPoint point: CGPoint, forLinePosition positionType: EllipseShape.PositionType) -> Bool {
+        
+        switch positionType {
+            case .top:
+                let bottomEllipse = getEllipseShape(byPosition: .bottom)
+                return point.y <= bottomEllipse.centerPoint.y
+            case .bottom:
+                let topEllipse = getEllipseShape(byPosition: .top)
+                return topEllipse.centerPoint.y <= point.y
+            case .left:
+                let rightEllipse = getEllipseShape(byPosition: .right)
+                return point.x <= rightEllipse.centerPoint.x
+            case .right:
+                let leftEllipse = getEllipseShape(byPosition: .left)
+                return leftEllipse.centerPoint.x <= point.x
+        }
+    }
+    
+    func isCornerAllowedMoving(toPoint point: CGPoint, forLinePosition positionType:  CircleShape.PositionType) -> Bool {
+        
+        switch positionType {
+            case .topLeft:
+                let topRight = getCircleShapeCenterPoint(byPosition: .topRight)
+                let bottomLeft = getCircleShapeCenterPoint(byPosition: .bottomLeft)
+                let closestPoint = point.closestPointOnLineSegment(startPoint: bottomLeft, endPoint: topRight)
+                
+                return point <= closestPoint
+            case .topRight:
+                let topLeft = getCircleShapeCenterPoint(byPosition: .topLeft)
+                let bottomRight = getCircleShapeCenterPoint(byPosition: .bottomRight)
+                let closestPoint = point.closestPointOnLineSegment(startPoint: topLeft, endPoint: bottomRight)
+                
+                return point.y <= closestPoint.y
+            case .bottomLeft:
+                let topLeft = getCircleShapeCenterPoint(byPosition: .topLeft)
+                let bottomRight = getCircleShapeCenterPoint(byPosition: .bottomRight)
+                let closestPoint = point.closestPointOnLineSegment(startPoint: topLeft, endPoint: bottomRight)
+   
+                return point.x <= closestPoint.x
+            case .bottomRight:
+                let topRight = getCircleShapeCenterPoint(byPosition: .topRight)
+                let bottomLeft = getCircleShapeCenterPoint(byPosition: .bottomLeft)
+                let closestPoint = point.closestPointOnLineSegment(startPoint: bottomLeft, endPoint: topRight)
+    
+                return point >= closestPoint
+        }
+    }
+    
+    func bring(sublayer shapeLayer: CAShapeLayer, toFront front: CALayer) {
+        shapeLayer.removeFromSuperlayer()
+        front.addSublayer(shapeLayer)
     }
 }

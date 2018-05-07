@@ -55,3 +55,10 @@ class EllipseShape: DragableShape {
         return path
     }
 }
+
+extension EllipseShape {
+    func positionAlongLine(withStartingPoint first: CGPoint, andSecond second: CGPoint) {
+        let lineAngle = first.horizontalAngle(forPoint: second)
+        self.angle = lineAngle
+    }
+}

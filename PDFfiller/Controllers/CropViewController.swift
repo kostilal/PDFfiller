@@ -40,6 +40,7 @@ class CropViewController: UIViewController, CropViewControllerProtocol {
     // MARK: - Actions
     
     @IBAction func resetButtonPressed(_ sender: Any) {
+         cropView?.redrawShapes(imageView.frame)
     }
     
     @IBAction func cancelButtonPressed(_ sender: Any) {
