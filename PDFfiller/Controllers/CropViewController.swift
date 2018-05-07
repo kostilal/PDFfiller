@@ -33,7 +33,7 @@ class CropViewController: UIViewController, CropViewControllerProtocol {
     }
     
     func setupCropView() {
-        cropView = CropView(frame: view.frame, cropedObjectFrame: imageView.frame, shapePositions: nil)
+        cropView = CropView(frame: CGRect(x: view.frame.origin.x, y: view.frame.origin.y, width: view.frame.size.width, height: view.frame.size.height - 40), cropedObjectFrame: imageView.frame, shapePositions: nil)
         view.addSubview(cropView!)
     }
     

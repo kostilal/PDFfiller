@@ -77,6 +77,10 @@ class CropView: UIView, CropViewProtocol {
         redrawCirclesLayers()
         redrawEllipseLayers()
         drawRectangleLayer()
+        
+        circleShapes.forEach { (circle) in
+            changeEllipseAngle(forChangedCorner: circle)
+        }
     }
     
     private func drawDragLayers() {
